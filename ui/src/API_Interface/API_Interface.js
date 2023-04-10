@@ -35,4 +35,9 @@ export default class APIInterface {
                     user: undefined
                 }));
     }
+
+
+    async insertNewUser(newUserDictionary) {
+        return axiosAgent.post(`login/insert-user`, newUserDictionary);
+    }
 }

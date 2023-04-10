@@ -12,6 +12,8 @@ export default function Login({setUser}) {
     const [userInput, setUserInput] = useState('');
     const [verifyUser, setVerifyUser] = useState(false);
     const [authFailed, setAuthFailed] = useState(false);
+    const [createUserPress, setCreateUserPress] = useState(false);
+
 
 
     const handleInputChange = event => {
@@ -21,13 +23,37 @@ export default function Login({setUser}) {
 //        event.preventDefault();
 
         setUserInput(event.target.value);
+
         setAuthFailed(false);
 
         if(event.key === "Enter") {
             console.log("handleKeyPress: Verify user input.");
             setVerifyUser(true);
         }
+        console.log(`new userInput value is: ${JSON.stringify(userInput)}`);
     };
+
+
+    const handleCreateUser = () => {
+        // if button is pressed we set it to true and we know that we're going to want to
+        // create a new user rather than just grab userInfo
+        console.log("handleCreateUser called.");
+
+        async function createAccountStatus() {
+            await setCreateUserPress(true);
+
+            console.log(`Create account pressed ${JSON.stringify(createUserPress)}`)
+        }
+
+        createAccountStatus();
+
+
+
+
+
+    }
+
+
 
     useEffect(() => {
 
@@ -35,21 +61,49 @@ export default function Login({setUser}) {
             return;
 
         const api = new API();
+
+
+        async function createUserInTable() {
+            // api call for createUser
+            let new_user_id = userInput.replace('#', '-')
+
+            let newUserDictionary = {
+                user_id: new_user_id,
+                queue_status: 'idle',
+                games_played: 0,
+                games_won: 0
+            }
+
+            await api.insertNewUser(newUserDictionary);
+
+
+        }
+
+
+
         async function getUserInfo() {
             api.getUserInfo(userInput.replace('#','-'))
                 .then( userInfo => {
-                console.log(`api returns user info and it is: ${JSON.stringify(userInfo)}`);
-                const user = userInfo.user;
-                if( userInfo.status === "OK" ) {
-                    setUser(user);
-                } else  {
-                    setVerifyUser(false);
-                    setAuthFailed(true);
-                }
-            });
+                    console.log(`api returns user info and it is: ${JSON.stringify(userInfo)}`);
+                    const user = userInfo.user;
+                    if( userInfo.status === "OK" ) {
+                        setUser(user);
+                    } else  {
+                        setVerifyUser(false);
+                        setAuthFailed(true);
+                    }
+                });
+        }
+
+
+        if (createUserPress) {
+            // if create Account was pressed, call both functions, right now for testing purposes it only
+            // calls one
+            createUserInTable();
         }
 
         getUserInfo();
+
     }, [verifyUser, setUser, userInput]);
 
 
@@ -75,6 +129,13 @@ export default function Login({setUser}) {
                     size="medium"
                     onClick={() => {setVerifyUser(true)}}
                 >Proceed</Button>
+           </Box>
+           <Box display="flex" justifyContent="center" alignItems="center" width="100%" mt={2}>
+               <Button
+                   variant="outlined"
+                   size="medium"
+                   onClick={() => {handleCreateUser()}}
+               >Create Account</Button>
            </Box>
        </Fragment>
 

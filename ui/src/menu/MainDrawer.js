@@ -69,6 +69,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 const TopBar = ({open, handleDrawerOpen, title, user, logoutAction}) => {
     // This component is responsible for rendering the Toolbar that is drawn
     // at the top of the drawer.
+    let user_name = user.replace('-','#');
 
     return (
         <Fragment>
@@ -88,7 +89,7 @@ const TopBar = ({open, handleDrawerOpen, title, user, logoutAction}) => {
                     </Typography>
                     <Box width="100%" justifyContent="center" flex={1}>
                         <Typography variant="h6" noWrap component="div" align="center">
-                            {user}
+                            {user_name}
                         </Typography>
                     </Box>
                     <Box width="100%" justifyContent="right" flex={1}>
@@ -149,7 +150,7 @@ const findSelectedComponent = (selectedItem) => {
 export default function MainDraswer({title, user, logoutAction}) {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
-    const [selectedItem, setSelectedItem] = useState('Summary');
+    const [selectedItem, setSelectedItem] = useState('Profile');
 
     console.log('in MainDrawer');
 
