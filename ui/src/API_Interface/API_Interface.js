@@ -38,6 +38,10 @@ export default class APIInterface {
 
 
     async insertNewUser(newUserDictionary) {
-        return axiosAgent.post(`login/insert-user`, newUserDictionary);
+        //const user_id = newUserDictionary.user_id;
+        console.log(`API_Interface::insertNewUser: newUserDictionary contains: ${JSON.stringify(newUserDictionary )}`);
+        return axiosAgent.post(`login`, newUserDictionary)
+            .catch(error => console.error(error));
     }
+
 }

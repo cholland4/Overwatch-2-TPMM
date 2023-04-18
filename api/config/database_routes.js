@@ -39,7 +39,7 @@ const loginRouter = require('koa-router')({
 
 loginRouter.get('/:user_id', LoginController.authorizeUser, (err) => console.log("database_routes.js: login-route error:", err));
 loginRouter.use(VerifyJWT);
-loginRouter.post('/insert-user', Authorize('admin'), LoginController.createUser);
+loginRouter.post('/', LoginController.createUser);
 
 
 /**

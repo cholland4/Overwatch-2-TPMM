@@ -37,7 +37,8 @@ export default function Login({setUser}) {
     const handleCreateUser = () => {
         // if button is pressed we set it to true and we know that we're going to want to
         // create a new user rather than just grab userInfo
-        console.log("handleCreateUser called.");
+
+        //console.log("handleCreateUser called.");
 
         async function createAccountStatus() {
             await setCreateUserPress(true);
@@ -46,8 +47,6 @@ export default function Login({setUser}) {
         }
 
         createAccountStatus();
-
-
 
 
 
@@ -69,9 +68,9 @@ export default function Login({setUser}) {
 
             let newUserDictionary = {
                 user_id: new_user_id,
-                queue_status: 'idle',
-                games_played: 0,
-                games_won: 0
+                tank_rank: 0,
+                dps_rank: 0,
+                support_rank: 0
             }
 
             await api.insertNewUser(newUserDictionary);
@@ -97,8 +96,7 @@ export default function Login({setUser}) {
 
 
         if (createUserPress) {
-            // if create Account was pressed, call both functions, right now for testing purposes it only
-            // calls one
+            // if createAccount was pressed, call this function to insert new user into database
             createUserInTable();
         }
 
@@ -134,7 +132,7 @@ export default function Login({setUser}) {
                <Button
                    variant="outlined"
                    size="medium"
-                   onClick={() => {handleCreateUser()}}
+                   onClick={() => {handleCreateUser(); setVerifyUser(true);}}
                >Create Account</Button>
            </Box>
        </Fragment>

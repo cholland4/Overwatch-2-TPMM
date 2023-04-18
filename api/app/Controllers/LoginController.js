@@ -55,14 +55,15 @@ const authorizeUser = async (ctx) => {
 }
 
 const createUser = async(ctx) => {
+    // this is called to Insert new users into the database when the create Account button is pressed
 
     //const u_id = ctx.params.user_id.replace('#','-');
 
     const userTableAttributes = [
         'user_id',
-        'queue_status',
-        'games_played',
-        'games_won'
+        'tank_rank',
+        'dps_rank',
+        'support_rank'
     ];
 
     let valuesFromRequest = JSON.parse(JSON.stringify(ctx.request.body)); // make a deep copy of ctx.request.body
@@ -71,9 +72,9 @@ const createUser = async(ctx) => {
         ...valuesFromRequest,
         ...{        // default values
             user_id: valuesFromRequest.hasOwnProperty('user_id') ? valuesFromRequest['user_id'] : 'error_name_whoopsie',
-            queue_status: valuesFromRequest.hasOwnProperty('queue_status') ? valuesFromRequest['queue_status'] : 'idle',
-            games_played: valuesFromRequest.hasOwnProperty('games_played') ? valuesFromRequest['games_played'] : 0,
-            games_won: valuesFromRequest.hasOwnProperty('games_won') ? valuesFromRequest['games_won'] : 0,
+            tank_rank: valuesFromRequest.hasOwnProperty('tank_rank') ? valuesFromRequest['tank_rank'] : 0,
+            dps_rank: valuesFromRequest.hasOwnProperty('dps_rank') ? valuesFromRequest['dps_rank'] : 0,
+            support_rank: valuesFromRequest.hasOwnProperty('support_rank') ? valuesFromRequest['support_rank'] : 0,
         }
     };
 
