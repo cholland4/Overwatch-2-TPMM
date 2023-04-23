@@ -1,10 +1,8 @@
-import tankIcon from './Icons/TankIcon.png';
-import damageIcon from './Icons/DamageIcon.png';
-import supportIcon from './Icons/SupportIcon.png';
-import './App.css';
-import {Button, Grid, Typography} from "@mui/material";
 import {Fragment} from "react";
-import MainDrawer from './menu/MainDrawer';
+import {Button, Grid, Typography} from "@mui/material";
+import tankIcon from "../Icons/TankIcon.png";
+import damageIcon from "../Icons/DamageIcon.png";
+import supportIcon from "../Icons/SupportIcon.png";
 
 function ChooseRole(props) {
     return (
@@ -120,14 +118,35 @@ function UserProfile(props) {
     )
 }
 
+const presentationComponents = (props) => {
+    return [
+        {
+            title: 'ChooseRole',
+            component: <ChooseRole/>
+        },
+        {
+            title: 'InQueue',
+            component: <InQueueScreen/>
+        },
+        {
+            title: 'Lobby',
+            component: <LobbyScreen/>
+        },
+        {
+            title: 'Profile',
+            component: <UserProfile/>
+        },
+    ];
+};
 
-function App({user, logoutAction}) {
-    const mainPageTitle = "TPMM";
-    return (
-        <MainDrawer title={mainPageTitle}
-                    user={user.user_id}
-                    logoutAction={logoutAction}/>
-    )
-}
 
-export default App;
+const containerComponents = (props) => {
+    return [
+        {
+            title: 'Activities',
+            component: <Fragment />
+        }
+    ];
+};
+
+export {presentationComponents, containerComponents};
