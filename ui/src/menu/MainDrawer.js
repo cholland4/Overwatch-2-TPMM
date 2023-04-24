@@ -136,8 +136,8 @@ const ContainerListItems = (props) => {
 
 const findSelectedComponent = (selectedItem) => {
     const component = [...presentationComponents(),
-                        ...containerComponents()].filter(comp => comp.title === selectedItem);
-    if(component.length === 1)
+        ...containerComponents()].filter(comp => comp.title === selectedItem);
+    if (component.length === 1)
         return component[0];
 
     console.log("In findSelectedComponent of MakeEligible. Didn't find the component that corresponds to the menu item.")
@@ -152,7 +152,7 @@ export default function MainDraswer({title, user, logoutAction}) {
     const [open, setOpen] = React.useState(false);
     const [selectedItem, setSelectedItem] = useState('Profile');
 
-    console.log('in MainDrawer');
+    // console.log('in MainDrawer');
 
     const handleDrawerOpen = () => {
         setOpen(true);

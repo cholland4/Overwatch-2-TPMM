@@ -1,8 +1,10 @@
-import {Fragment} from "react";
+import {Fragment, useState} from "react";
 import {Button, Grid, Typography} from "@mui/material";
 import tankIcon from "../Icons/TankIcon.png";
 import damageIcon from "../Icons/DamageIcon.png";
 import supportIcon from "../Icons/SupportIcon.png";
+import API from "../API_Interface/API_Interface";
+import Box from "@mui/material/Box";
 
 function ChooseRole(props) {
     return (
@@ -105,14 +107,54 @@ function LobbyScreen(props) {
 }
 
 function UserProfile(props) {
-    // const {username} = props;
-    const username = "Archangel#12958"
+    // const username = props.username;
+    const username = 'Archangel#12958'
+    // console.log(props.user);
+    const [tankRank, setTankRank] = useState(2450);
+    const [dpsRank, setDpsRank] = useState(2450);
+    const [supportRank, setSupportRank] = useState(2450);
+
+    const api = new API();
+
+
+    async function getUserData() {
+        // api call for createUser
+        let new_user_id = String(username).replace('#', '-');
+
+        const ranks = await api.getUserRanks(new_user_id);
+
+        setTankRank(ranks.user.tank_rank);
+        setDpsRank(ranks.user.dps_rank);
+        setSupportRank(ranks.user.support_rank);
+    }
+
+    getUserData();
+
+
     return (
         <Fragment>
             <div style={{textAlign:'center'}}>
                 <Button style={{position:'absolute', left:'5px', top:'5px'}} variant="contained">User Profile</Button>
                 <Button style={{position:'absolute', right:'5px', top:'5px'}} variant="contained">Logout</Button>
-                <Typography variant={'h3'}>{username}</Typography>
+                <Typography variant={'h3'} marginBottom={'15px'}>{username}</Typography>
+
+                <Box style={{backgroundColor:'lightgray',
+                    width:'32%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Typography variant={'h5'}>TANK</Typography>
+                    <Typography variant={'h6'}>{tankRank}</Typography>
+                </Box>
+                <Box style={{backgroundColor:'lightgray',
+                    width:'32%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Typography variant={'h5'}>DPS</Typography>
+                    <Typography variant={'h6'}>{dpsRank}</Typography>
+                </Box>
+                <Box style={{backgroundColor:'lightgray',
+                    width:'32%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Typography variant={'h5'}>SUPPORT</Typography>
+                    <Typography variant={'h6'}>{supportRank}</Typography>
+                </Box>
+
+
             </div>
         </Fragment>
     )
