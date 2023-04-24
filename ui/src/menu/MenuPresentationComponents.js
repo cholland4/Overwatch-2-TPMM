@@ -1,8 +1,12 @@
-import {Fragment} from "react";
+import {Fragment, useEffect, useRef} from "react";
 import {Button, Grid, Typography} from "@mui/material";
 import tankIcon from "../Icons/TankIcon.png";
 import damageIcon from "../Icons/DamageIcon.png";
 import supportIcon from "../Icons/SupportIcon.png";
+import React, { useState } from 'react';
+import Box from "@mui/material/Box";
+
+
 
 function ChooseRole(props) {
     return (
@@ -77,14 +81,49 @@ function InQueueScreen(props) {
     );
 }
 
+
 function LobbyScreen(props) {
     // const {players} = props;
     const players = ['player 1', 'player 2', 'player 3', 'player 4', 'player 5',
         'player 6', 'player 7', 'player 8', 'player 9', 'player 10'];
+    const [csvData, setCsvData] = useState([]);
+    useEffect(() => {
+        console.log(csvData);
+    }, [csvData]);
+
+    const readerRef = useRef(new FileReader());
+    const handleCsvUpload = (event) => {
+        const file = event.target.files[0];
+        const reader = readerRef.current;
+
+        reader.readAsText(file);
+
+        reader.onload = () => {
+            const csv = reader.result;
+            const lines = csv.split('\n');
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const obj = {};
+                const currentline = lines[i].split(',');
+
+                obj["Player Name"] = currentline[4];
+                obj["Hero Damage Dealt"] = currentline[11];
+                obj["Healing Dealt"] = currentline[12];
+
+                result.push(obj);
+            }
+
+            setCsvData(result);
+            console.log(csvData);
+        };
+
+    };
+
     return (
         <Fragment>
             <div style={{textAlign:'center'}}>
-                <Typography variant={'h3'}>Queue</Typography>
+                <Typography variant={'h3'}>Lobby</Typography>
                 <Grid container columns={2}>
                     {
                         players.map((element, idx) =>
@@ -99,10 +138,23 @@ function LobbyScreen(props) {
                     }
                 </Grid>
                 <Button variant="contained">Report Winner</Button>
+                <Box sx={{justify: 'flex', alignContent: 'center'}}>
+                <div style={ {marginTop: 350, justifySelf: 'center', marginLeft: 'auto', marginRight: 'auto'}}>
+
+                    <Typography variant='h5' style={{marginBottom: 25, marginTop: 5}}> Upload your statistics post match!</Typography>
+
+                    <Box sx={{ justify: 'flex', alignContent: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
+                        <input  type="file" onChange={handleCsvUpload} />
+                    </Box>
+
+                </div>
+            </Box>
             </div>
         </Fragment>
     );
 }
+
+
 
 function UserProfile(props) {
     // const {username} = props;
