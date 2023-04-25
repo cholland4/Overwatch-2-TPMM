@@ -17,7 +17,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
 import {presentationComponents, containerComponents}  from './MenuPresentationComponents';
-import Button from "@mui/material/Button";
 
 const drawerWidth = 240;
 
@@ -134,8 +133,8 @@ const ContainerListItems = (props) => {
     </div>
 };
 
-const findSelectedComponent = (selectedItem) => {
-    const component = [...presentationComponents(),
+const findSelectedComponent = (selectedItem, user) => {
+    const component = [...presentationComponents({user}),
         ...containerComponents()].filter(comp => comp.title === selectedItem);
     if (component.length === 1)
         return component[0];
@@ -147,7 +146,7 @@ const findSelectedComponent = (selectedItem) => {
     }
 };
 
-export default function MainDraswer({title, user, logoutAction}) {
+export default function MainDrawer({title, user, logoutAction}) {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [selectedItem, setSelectedItem] = useState('Profile');
@@ -192,14 +191,14 @@ export default function MainDraswer({title, user, logoutAction}) {
                 <List>
                     <PresentationListItems selectedItem={selectedItem}
                                            onClick={handleSelectedItem}
-                                           menuItemTitles={presentationComponents().map(comp => comp.title)}
+                                           menuItemTitles={presentationComponents(user).map(comp => comp.title)}
                     />
                 </List>
                
             </Drawer>
             <Main open={open}>
                 <DrawerHeader />
-                {findSelectedComponent(selectedItem).component}
+                {findSelectedComponent(selectedItem, user).component}
             </Main>
         </Box>
     );

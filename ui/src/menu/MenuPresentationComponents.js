@@ -1,10 +1,11 @@
-import {Fragment, useState} from "react";
-import {Button, Grid, Typography} from "@mui/material";
+import {Fragment, useEffect, useState} from "react";
+import {Button, Grid, Stack, Typography} from "@mui/material";
 import tankIcon from "../Icons/TankIcon.png";
 import damageIcon from "../Icons/DamageIcon.png";
 import supportIcon from "../Icons/SupportIcon.png";
 import API from "../API_Interface/API_Interface";
 import Box from "@mui/material/Box";
+import * as PropTypes from "prop-types";
 
 function ChooseRole(props) {
     return (
@@ -79,6 +80,12 @@ function InQueueScreen(props) {
     );
 }
 
+function Item(props) {
+    return null;
+}
+
+Item.propTypes = {children: PropTypes.node};
+
 function LobbyScreen(props) {
     // const {players} = props;
     const players = ['player 1', 'player 2', 'player 3', 'player 4', 'player 5',
@@ -87,7 +94,7 @@ function LobbyScreen(props) {
         <Fragment>
             <div style={{textAlign:'center'}}>
                 <Typography variant={'h3'}>Queue</Typography>
-                <Grid container columns={2}>
+                {/*<Grid container columns={2}>
                     {
                         players.map((element, idx) =>
                             <Grid item
@@ -99,7 +106,28 @@ function LobbyScreen(props) {
                             </Grid>
                         )
                     }
-                </Grid>
+                </Grid> */}
+                <Box style={{backgroundColor:'lightgray',
+                    width:'39%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Typography variant={'h5'}>Team 1</Typography>
+                    <Stack>
+                        {
+                            players.map((element, idx) =>
+                                <Item key={idx}>
+                                    {element}
+                                </Item>
+                            )
+                        }
+                    </Stack>
+                </Box>
+                <Box style={{backgroundColor:'lightgray',
+                    width:'19%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Typography variant={'h5'}>avg</Typography>
+                </Box>
+                <Box style={{backgroundColor:'lightgray',
+                    width:'39%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Typography variant={'h5'}>Team 2</Typography>
+                </Box>
                 <Button variant="contained">Report Winner</Button>
             </div>
         </Fragment>
@@ -107,19 +135,20 @@ function LobbyScreen(props) {
 }
 
 function UserProfile(props) {
-    // const username = props.username;
-    const username = 'Archangel#12958'
-    // console.log(props.user);
+    const {user} = props;
+
     const [tankRank, setTankRank] = useState(2450);
     const [dpsRank, setDpsRank] = useState(2450);
     const [supportRank, setSupportRank] = useState(2450);
 
+
+    useEffect(() => {
     const api = new API();
 
 
     async function getUserData() {
         // api call for createUser
-        let new_user_id = String(username).replace('#', '-');
+        let new_user_id = String(user).replace('#', '-');
 
         const ranks = await api.getUserRanks(new_user_id);
 
@@ -130,13 +159,15 @@ function UserProfile(props) {
 
     getUserData();
 
+    }, [tankRank, dpsRank, supportRank]);
+
 
     return (
         <Fragment>
             <div style={{textAlign:'center'}}>
                 <Button style={{position:'absolute', left:'5px', top:'5px'}} variant="contained">User Profile</Button>
                 <Button style={{position:'absolute', right:'5px', top:'5px'}} variant="contained">Logout</Button>
-                <Typography variant={'h3'} marginBottom={'15px'}>{username}</Typography>
+                <Typography variant={'h3'} marginBottom={'15px'}>{String(user).split('-')[0]}'s Profile</Typography>
 
                 <Box style={{backgroundColor:'lightgray',
                     width:'32%', float:'left', padding:'2px', margin:'3px'}}>
@@ -154,6 +185,14 @@ function UserProfile(props) {
                     <Typography variant={'h6'}>{supportRank}</Typography>
                 </Box>
 
+                <Box style={{
+                    width:'100%', padding:'2px'}} marginY={'10px'}>
+                    <Typography variant={'h5'}>further statistics here</Typography>
+                    <Typography variant={'h6'}>average damage per minute,
+                    average healing per minute,
+                    etc</Typography>
+                </Box>
+
 
             </div>
         </Fragment>
@@ -161,6 +200,7 @@ function UserProfile(props) {
 }
 
 const presentationComponents = (props) => {
+    const {user}=props;
     return [
         {
             title: 'ChooseRole',
@@ -176,8 +216,8 @@ const presentationComponents = (props) => {
         },
         {
             title: 'Profile',
-            component: <UserProfile/>
-        },
+            component: <UserProfile user={user}/>
+        }
     ];
 };
 

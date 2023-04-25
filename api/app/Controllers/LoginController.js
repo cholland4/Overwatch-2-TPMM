@@ -3,8 +3,6 @@ const setAccessToken = require('../../config/setAccessToken');
 const {value} = require("lodash/seq");
 const axios = require("axios");
 const cheerio = require("cheerio");
-// const {performScraping} = require("../../api_server");
-
 
 require('dotenv').config();
 
@@ -119,7 +117,8 @@ async function performScraping(battletag) {
                 }
             });
 
-        console.log(ranks);}
+        console.log('ranks: ', ranks);
+    }
     ).catch((err) => console.log('Error in webscrape: ', "err"))
 
     return ranks;
@@ -181,6 +180,8 @@ const createUser = async(ctx) => {
 
     const scraped = await performScraping(u_id);
 
+    console.log("scraped: ", scraped);
+
     const userTableAttributes = [
         'user_id',
         'tank_rank',
@@ -218,7 +219,7 @@ const createUser = async(ctx) => {
     return new Promise((resolve, reject) => {
         console.log(`API server::createUser: ${JSON.stringify(ctx.request.body)}`);
         console.log(`API server::createUser after having added default values: ${JSON.stringify(valuesToInsert)}`);
-
+        console.log('x: ', valuesToInsert);
         const query = `
                        INSERT INTO users (${userTableAttributes})
                               VALUES (${valueMarkers})
