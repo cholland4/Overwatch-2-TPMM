@@ -6,6 +6,9 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import Overwatch_2 from "./Icons/Overwatch_2_resized.png";
+import {Typography} from "@mui/material";
+import {Tooltip} from "@mui/material"
 
 
 export default function Login({setUser}) {
@@ -27,10 +30,10 @@ export default function Login({setUser}) {
         setAuthFailed(false);
 
         if(event.key === "Enter") {
-            console.log("handleKeyPress: Verify user input.");
+            //console.log("handleKeyPress: Verify user input.");
             setVerifyUser(true);
         }
-        console.log(`new userInput value is: ${JSON.stringify(userInput)}`);
+        //console.log(`new userInput value is: ${JSON.stringify(userInput)}`);
     };
 
 
@@ -75,6 +78,7 @@ export default function Login({setUser}) {
 
             await api.insertNewUser(newUserDictionary);
 
+            setCreateUserPress(false);
 
         }
 
@@ -107,15 +111,27 @@ export default function Login({setUser}) {
 
     return (
        <Fragment>
-           <Box display="flex" justifyContent="center" alignItems="center" width="100%" mt={10}>
+           <Box display="flex" justifyContent="center" alignItems="center" mt={15}>
+            <img src={Overwatch_2}/>
+            </Box>
+           <Box display="flex" justifyContent="center" alignItems="center" mt={5}>
+           <Typography variant="h2">
+               Matchmaker
+           </Typography>
+               <Typography variant="h5" marginLeft={3} marginTop={2} fontStyle={"italic"}>
+                      The hub for higher quality Solo Queue.
+               </Typography>
+            </Box>
+           <Box display="flex" justifyContent="center" alignItems="center" width="100%" mt={8} >
+
 
                 <TextField
                     error={authFailed}
                     id="outlined-error-helper-text"
-                    label="Login name"
+                    label="Battletag"
                     placeholder=""
                     value={userInput}
-                    helperText="Only for existing users!"
+                    helperText="Please enter your Battletag."
                     onChange={handleInputChange}
                 />
                 <Divider />
@@ -123,17 +139,22 @@ export default function Login({setUser}) {
 
            <Box display="flex" justifyContent="center" alignItems="center" width="100%" mt={2}>
            <Button
+                    color={"secondary"}
                     variant="outlined"
                     size="medium"
                     onClick={() => {setVerifyUser(true)}}
-                >Proceed</Button>
+                >Login</Button>
            </Box>
            <Box display="flex" justifyContent="center" alignItems="center" width="100%" mt={2}>
+               <Tooltip title={'May take a moment to add account to our database - please be patient'}>
                <Button
                    variant="outlined"
                    size="medium"
                    onClick={() => {handleCreateUser(); setVerifyUser(true);}}
                >Create Account</Button>
+               </Tooltip>
+           </Box>
+           <Box display="flex" justifyContent="center" alignItems="center" mt={5}>
            </Box>
        </Fragment>
 

@@ -44,4 +44,34 @@ export default class APIInterface {
             .catch(error => console.error(error));
     }
 
+    async updateStats(user_id, damage_done, healing_done) {
+
+        return axiosAgent.put(`stats/${user_id}/${damage_done}/${healing_done}`);
+    }
+
+    async getUserRanks(user_id) {
+        return axiosAgent.get(`stats/${user_id}`)
+            .then(userInfo => userInfo.data)
+            .catch(error => (
+                {
+                    error,
+                    user: undefined
+                }));
+    }
+
+    async grabBeginnerQueue(role_id) {
+
+        return axiosAgent.get(`queue/${role_id}`);
+    }
+
+    async grabIntermediateQueue(role_id) {
+
+        return axiosAgent.get(`queue/${role_id}`);
+    }
+
+    async grabExpertQueue(role_id) {
+
+        return axiosAgent.get(`queue/${role_id}`);
+    }
+
 }

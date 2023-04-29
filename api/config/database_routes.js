@@ -42,12 +42,35 @@ loginRouter.use(VerifyJWT);
 loginRouter.post('/', LoginController.createUser);
 
 
+const QueueController = require('../app/Controllers/QueueController.js');
+const queueRouter = require('koa-router')({
+    prefix: '/queue'
+});
+
+queueRouter.use(VerifyJWT);
+queueRouter.get('/:role_id', QueueController.numInBeginnerQueue);
+queueRouter.get('/:role_id', QueueController.numInIntermediateQueue);
+queueRouter.get('/:role_id', QueueController.numInExpertQueue);
+
+
+const StatisticsController = require('../app/Controllers/StatisticsController.js');
+const statisticsRouter = require('koa-router')({
+    prefix: '/stats'
+});
+
+statisticsRouter.get('/:user_id', StatisticsController.UserRanks, (err) => console.log("database_routes.js: login-route error:", err));
+statisticsRouter.use(VerifyJWT);
+statisticsRouter.put('/:role_id/:damage_done/:healing_done', StatisticsController.updateStats);
+
+
 /**
  * Register all of the controllers into the default controller.
  */
 router.use(
     '',
-    loginRouter.routes()
+    loginRouter.routes(),
+    queueRouter.routes(),
+    statisticsRouter.routes()
 );
 
 module.exports = function (app) {
