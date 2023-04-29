@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import {Tooltip} from "@mui/material";
 
 
 export default function Login({setUser}) {
@@ -27,10 +28,10 @@ export default function Login({setUser}) {
         setAuthFailed(false);
 
         if(event.key === "Enter") {
-            console.log("handleKeyPress: Verify user input.");
+            // console.log("handleKeyPress: Verify user input.");
             setVerifyUser(true);
         }
-        console.log(`new userInput value is: ${JSON.stringify(userInput)}`);
+        // console.log(`new userInput value is: ${JSON.stringify(userInput)}`);
     };
 
 
@@ -73,6 +74,7 @@ export default function Login({setUser}) {
 
             await api.insertNewUser(newUserDictionary);
 
+            setCreateUserPress(false);
 
         }
 
@@ -127,11 +129,13 @@ export default function Login({setUser}) {
                 >Proceed</Button>
            </Box>
            <Box display="flex" justifyContent="center" alignItems="center" width="100%" mt={2}>
+               <Tooltip title={'May take a moment to add account to our database - please be patient'}>
                <Button
                    variant="outlined"
                    size="medium"
                    onClick={() => {handleCreateUser(); setVerifyUser(true);}}
                >Create Account</Button>
+               </Tooltip>
            </Box>
        </Fragment>
 
