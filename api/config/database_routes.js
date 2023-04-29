@@ -42,12 +42,24 @@ loginRouter.use(VerifyJWT);
 loginRouter.post('/', LoginController.createUser);
 
 
+// Statistics router configuration.
+
+const StatisticsController = require('../app/Controllers/StatisticsController.js');
+const statisticsRouter = require('koa-router')({
+    prefix: '/stats'
+});
+
+
+statisticsRouter.get('/:user_id', StatisticsController.UserRanks, (err) => console.log("database_routes.js: login-route error:", err));
+statisticsRouter.use(VerifyJWT);
+
 /**
  * Register all of the controllers into the default controller.
  */
 router.use(
     '',
-    loginRouter.routes()
+    loginRouter.routes(),
+    statisticsRouter.routes()
 );
 
 module.exports = function (app) {

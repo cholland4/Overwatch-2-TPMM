@@ -44,4 +44,14 @@ export default class APIInterface {
             .catch(error => console.error(error));
     }
 
+    async getUserRanks(user_id) {
+        return axiosAgent.get(`stats/${user_id}`)
+            .then(userInfo => userInfo.data)
+            .catch(error => (
+                {
+                    error,
+                    user: undefined
+                }));
+    }
+
 }
