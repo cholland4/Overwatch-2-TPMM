@@ -9,10 +9,8 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import small_icon from "../Icons/small icon attempt.png";
- //import {presentationComponents, containerComponents}  from './MenuPresentationComponents';
 import Button from "@mui/material/Button";
 import damageIcon from "../Icons/DamageIcon.png";
-
 import { Grid, Paper, Stack} from "@mui/material";
 import tankIcon from "../Icons/TankIcon.png";
 import supportIcon from "../Icons/SupportIcon.png";
@@ -83,6 +81,8 @@ const TopBar = ({inQueue, handleSelectedItem, title, user, logoutAction}) => {
                     <IconButton
                         color="inherit"
                         edge="start"
+                        disableRipple={true}
+                        style={{cursor:'default'}}
                     >
                         <img src={small_icon}/>
                     </IconButton>
@@ -113,18 +113,7 @@ const TopBar = ({inQueue, handleSelectedItem, title, user, logoutAction}) => {
                             Queue
                         </Typography>
                     </Box>
-                    <Box visibility={inQueue ? 'visible' : 'hidden' } width="50%" justifyContent="center"
-                         flex={1} onClick={() => handleSelectedItem('ChooseRole')}  sx={{ boxShadow:'0px 5px 15px 0 rgba(0, 0, 0,0.2)',
-                        borderRadius: '15px',
-                        '&:hover': {
-                            backgroundColor: 'grey',
-                            transition: 'background-color 0.3s ease-in-out'
-                        }} }>
-                        <Typography variant="h6" noWrap component="div" align="center">
-                            Leave Queue
-                        </Typography>
-                    </Box>
-                    <Box width="100%" justifyContent="right" flex={1}>
+                    <Box width="100%" justifyContent="right" flex={1} >
                         <Typography variant="h7" noWrap component="div" align="right" onClick={() => logoutAction()}>
                             Logout
                         </Typography>
@@ -139,11 +128,73 @@ const TopBar = ({inQueue, handleSelectedItem, title, user, logoutAction}) => {
 
 function ChooseRole(props) {
 
-    const {setSelectedItem, setInQueue} = props;
-    const clickHandler = () => {
-        setSelectedItem("InQueue");
+    const {handleSelectedItem, setInQueue, setCurrentQueue, user} = props;
+
+
+    async function addUserToQueue(role) {
+        // api call for createUser
+        const api = new API();
+
+        const new_user_id = String(user).replace('#', '-');
+        const ranks = await api.getUserRanks(new_user_id);
+
+        let rank_for_role_queued;
+
+        switch (role) {
+            case 'tank':
+                rank_for_role_queued = ranks.user.tank_rank;
+                break;
+            case 'dps':
+                rank_for_role_queued = ranks.user.dps_rank;
+                break;
+            case 'support':
+                rank_for_role_queued = ranks.user.support_rank;
+                break;
+            default:
+                rank_for_role_queued = 2450;
+        }
+
+
+
+        let queueDictionary = {
+            user_id: new_user_id,
+            role: role,
+            rank_for_role_queued: rank_for_role_queued
+        }
+
+        await api.insertIntoQueue(queueDictionary);
+
+        if (rank_for_role_queued >= 3500){
+            setCurrentQueue('expert');
+            return 'expert';
+        }
+        else if (rank_for_role_queued >= 2000) {
+            setCurrentQueue('intermediate');
+            return 'intermediate';
+        }
+        else {
+            setCurrentQueue('beginner');
+            return 'beginner';
+        }
+    }
+
+
+    const clickTank = () => {
+        handleSelectedItem("InQueue");
+        addUserToQueue('tank').then((result) => setCurrentQueue(result));
         setInQueue(true);
     }
+    const clickDps = () => {
+        handleSelectedItem("InQueue");
+        addUserToQueue('dps');
+        setInQueue(true);
+    }
+    const clickSupport = () => {
+        handleSelectedItem("InQueue");
+        addUserToQueue('support');
+        setInQueue(true);
+    }
+
 
 
     return (
@@ -166,7 +217,7 @@ function ChooseRole(props) {
                       paddingRight={'55px'}>
 
                     <Grid item xs={3}>
-                        <button onClick={clickHandler} style={{backgroundColor: '#0080FF', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 128, 255,5)'}}>
+                        <button onClick={clickTank} style={{backgroundColor: '#0080FF', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 128, 255,5)'}}>
                             <Typography variant="h3" color={'white'}>Tank</Typography>
                             <img src={tankIcon}/>
                         </button>
@@ -180,7 +231,7 @@ function ChooseRole(props) {
                         </Box>
                     </Grid>
                     <Grid item xs={3}>
-                        <button onClick={clickHandler} style={{backgroundColor: '#FF8C00', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 102, 0,5)'}}>
+                        <button onClick={clickDps} style={{backgroundColor: '#FF8C00', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 102, 0,5)'}}>
                             <Typography variant="h3" color={'white'}>Damage</Typography>
                             <img src={damageIcon}/>
                         </button>
@@ -194,7 +245,7 @@ function ChooseRole(props) {
                         </Box>
                     </Grid>
                     <Grid item xs={3}>
-                        <button onClick={clickHandler} style={{backgroundColor: '#FF4136', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54,5)'}}>
+                        <button onClick={clickSupport} style={{backgroundColor: '#FF4136', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54,5)'}}>
                             <Typography variant="h3" color={'white'}>Support</Typography>
                             <img src={supportIcon}/>
                         </button>
@@ -220,10 +271,8 @@ function ChooseRole(props) {
 
 
 function InQueueScreen(props) {
-    // const {numTanks, numDamage, numSupport} = props;
-
-    const {user} = props;
-    const current_queue = 'beginner';
+    const {user, handleSelectedItem, currentQueue} = props;
+    const user_id = String(user).replace('#', '-');
 
     const api = new API();
 
@@ -247,49 +296,48 @@ function InQueueScreen(props) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [feedback, setFeedback] = useState('');
     async function updateUsersInQueue(current_queue) {
-
         switch(current_queue) {
             case "beginner":
                 const tanksInBeginnerQueue = await api.grabBeginnerQueue('tank');
-                console.log(`users from the tank ${JSON.stringify(tanksInBeginnerQueue)}`);
+                console.log(`users from beginner tank ${JSON.stringify(tanksInBeginnerQueue)}`);
                 setNumTanks(tanksInBeginnerQueue.data.length);
 
-                const dpsInBeginnerQueue = await api.grabBeginnerQueue('damage');
-                console.log(`users from the dps ${JSON.stringify(dpsInBeginnerQueue)}`);
+                const dpsInBeginnerQueue = await api.grabBeginnerQueue('dps');
+                console.log(`users from beginner dps ${JSON.stringify(dpsInBeginnerQueue)}`);
                 setDps(dpsInBeginnerQueue.data.length);
 
                 const supportsInBeginnerQueue = await api.grabBeginnerQueue('support');
-                console.log(`users from the support ${JSON.stringify(supportsInBeginnerQueue)}`);
+                console.log(`users from beginner support ${JSON.stringify(supportsInBeginnerQueue)}`);
                 setSupports(supportsInBeginnerQueue.data.length);
 
                 break;
             case "intermediate":
 
                 const tanksInIntermediateQueue = await api.grabIntermediateQueue('tank');
-                console.log(`users from the tank ${JSON.stringify(tanksInIntermediateQueue)}`);
+                console.log(`users from intermediate tank ${JSON.stringify(tanksInIntermediateQueue)}`);
                 setNumTanks(tanksInIntermediateQueue.data.length);
 
-                const dpsInIntermediateQueue = await api.grabIntermediateQueue('damage');
-                console.log(`users from the dps ${JSON.stringify(dpsInIntermediateQueue)}`);
+                const dpsInIntermediateQueue = await api.grabIntermediateQueue('dps');
+                console.log(`users from intermediate dps ${JSON.stringify(dpsInIntermediateQueue)}`);
                 setDps(dpsInIntermediateQueue.data.length);
 
                 const supportsInIntermediateQueue = await api.grabIntermediateQueue('support');
-                console.log(`users from the support ${JSON.stringify(supportsInIntermediateQueue)}`);
+                console.log(`users from intermediate support ${JSON.stringify(supportsInIntermediateQueue)}`);
                 setSupports(supportsInIntermediateQueue.data.length);
 
 
                 break;
             case "expert":
                 const tanksInQueue = await api.grabExpertQueue('tank');
-                console.log(`users from the tank ${JSON.stringify(tanksInQueue)}`);
+                console.log(`users from expert tank ${JSON.stringify(tanksInQueue)}`);
                 setNumTanks(tanksInQueue.data.length);
 
-                const dpsInQueue = await api.grabExpertQueue('damage');
-                console.log(`users from the dps ${JSON.stringify(dpsInQueue)}`);
+                const dpsInQueue = await api.grabExpertQueue('dps');
+                console.log(`users from expert dps ${JSON.stringify(dpsInQueue)}`);
                 setDps(dpsInQueue.data.length);
 
                 const supportsInQueue = await api.grabExpertQueue('support');
-                console.log(`users from the support ${JSON.stringify(supportsInQueue)}`);
+                console.log(`users from expert support ${JSON.stringify(supportsInQueue)}`);
                 setSupports(supportsInQueue.data.length);
 
 
@@ -297,12 +345,16 @@ function InQueueScreen(props) {
             default:
                 console.log("Invalid queue type.");
         }
-
-
     }
 
     function checkIfQueueSatisfied() {
         console.log("checking queue.");
+        if (tanks >= 2 && dps >= 4 && supports >= 4){
+            console.log('satisfied');
+            // api call to matchmaking alg
+            // set team1 and team2 states
+            // handleSelectedItem('Lobby');
+        }
         // logic to check if queue is satisfied and then update page to the lobby potentially right here
     }
 
@@ -311,20 +363,20 @@ function InQueueScreen(props) {
     // to change the amount of seconds it checks, 5000 = 5 seconds, 10000 = 10 seconds, etc.
 
 
-/*
+
     useEffect(() => {
         // update queue state every 5 seconds
         const interval = setInterval(() => {
-            updateUsersInQueue(current_queue);
+            updateUsersInQueue(currentQueue);
             // after this call need to also check if the queue was satisfied within the interval
             checkIfQueueSatisfied();
 
         }, 5000);
         // clean up interval on unmount
         return () => clearInterval(interval);
-    }, []);
+    }, [currentQueue]);
 
-*/
+
 
 
     function handleAnswerSelect(selectedAnswer) {
@@ -343,11 +395,16 @@ function InQueueScreen(props) {
 
     const currentQuestion = triviaQuestions[currentQuestionIndex];
 
+    const handleLeaveQueue = () => {
+        api.removeFromQueues(user_id);
+        handleSelectedItem('ChooseRole');
+    }
+
 
     return (
         <Fragment>
             <div style={{textAlign:'center'}}>
-                <Typography variant={'h3'}>Waiting to fill up Queue...</Typography>
+                <Typography variant={'h3'}>Waiting to fill up {currentQueue} Queue...</Typography>
                 <Grid container
                       spacing={12}
                       justifyContent="center"
@@ -370,6 +427,12 @@ function InQueueScreen(props) {
                         <Typography variant="h3">{supports}/4</Typography>
                     </Grid>
                 </Grid>
+                <Box marginTop={'25px'}>
+                    <button onClick={handleLeaveQueue}
+                            style={{backgroundColor: 'lightgray', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
+                        Leave Queue
+                    </button>
+                </Box>
             </div>
             <div style={{textAlign: 'center'}}>
                 <Box sx={{justify: 'center', marginTop: 10}}>
@@ -527,8 +590,6 @@ function LobbyScreen(props) {
 }
 
 
-
-
 function UserProfile(props) {
     const {user} = props;
 
@@ -627,18 +688,18 @@ function UserProfile(props) {
 
 
 
-
-
 const presentationComponents = (props) => {
-    const {user, setSelectedItem, setInQueue}=props;
+    const {user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue}=props;
     return [
         {
             title: 'ChooseRole',
-            component: <ChooseRole setSelectedItem={setSelectedItem} setInQueue={setInQueue}/>
+            component: <ChooseRole handleSelectedItem={handleSelectedItem} setInQueue={setInQueue}
+                                   user={user} setCurrentQueue={setCurrentQueue}/>
         },
         {
             title: 'InQueue',
-            component: <InQueueScreen user={user}/>
+            component: <InQueueScreen user={user} currentQueue={currentQueue}
+                                      handleSelectedItem={handleSelectedItem}/>
         },
         {
             title: 'Lobby',
@@ -653,8 +714,9 @@ const presentationComponents = (props) => {
 
 
 
-const findSelectedComponent = (selectedItem, user, setSelectedItem, setInQueue) => {
-    const component = [...presentationComponents({user, setSelectedItem, setInQueue})].filter(comp => comp.title === selectedItem);
+const findSelectedComponent = (selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue) => {
+    // const {selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue} = props;
+    const component = [...presentationComponents({user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue})].filter(comp => comp.title === selectedItem);
     if (component.length === 1)
         return component[0];
 
@@ -665,27 +727,29 @@ const findSelectedComponent = (selectedItem, user, setSelectedItem, setInQueue) 
     }
 };
 
-export default function MainDraswer({title, user, logoutAction}) {
+export default function MainDrawer({title, user, logoutAction}) {
     const theme = useTheme();
     const [selectedItem, setSelectedItem] = useState('Profile');
     const [inQueue, setInQueue] = useState(false);
+    const [currentQueue, setCurrentQueue] = useState('none');
 
-    console.log('in MainDrawer');
+    // console.log('in MainDrawer');
 
     const handleSelectedItem = (title) => {
         setSelectedItem(title)
-        if (title === 'ChooseRole' || title === 'Profile')
+        if (title === 'ChooseRole' || title === 'Profile'){
             setInQueue(false);
+            setCurrentQueue('none');
+        }
     };
 
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <TopBar title={title} inQueue={inQueue} handleSelectedItem={handleSelectedItem} user={user} logoutAction={logoutAction} />
-
             <Main sx={{marginLeft:'0px'}}>
                 <DrawerHeader />
-                {findSelectedComponent(selectedItem, user, setSelectedItem, setInQueue).component}
+                {findSelectedComponent(selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue).component}
             </Main>
         </Box>
     );

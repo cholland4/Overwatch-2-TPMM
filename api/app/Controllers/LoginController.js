@@ -116,8 +116,6 @@ async function performScraping(battletag) {
                         break;
                 }
             });
-
-        console.log('ranks: ', ranks);
     }
     ).catch((err) => console.log('Error in webscrape: ', "err"))
 
@@ -180,8 +178,6 @@ const createUser = async(ctx) => {
 
     const scraped = await performScraping(u_id);
 
-    console.log("scraped: ", scraped);
-
     const userTableAttributes = [
         'user_id',
         'tank_rank',
@@ -217,9 +213,8 @@ const createUser = async(ctx) => {
 
 
     return new Promise((resolve, reject) => {
-        console.log(`API server::createUser: ${JSON.stringify(ctx.request.body)}`);
-        console.log(`API server::createUser after having added default values: ${JSON.stringify(valuesToInsert)}`);
-        console.log('x: ', valuesToInsert);
+        // console.log(`API server::createUser: ${JSON.stringify(ctx.request.body)}`);
+        // console.log(`API server::createUser after having added default values: ${JSON.stringify(valuesToInsert)}`);
         const queryUser = `
                        INSERT INTO users (${userTableAttributes})
                               VALUES (${valueMarkers})

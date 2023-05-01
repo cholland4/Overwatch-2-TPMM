@@ -44,8 +44,19 @@ export default class APIInterface {
             .catch(error => console.error(error));
     }
 
-    async updateStats(user_id, damage_done, healing_done) {
+    async insertIntoQueue(queueDictionary) {
+        console.log(`API_Interface::insertIntoQueue: queueDictionary contains: ${JSON.stringify(queueDictionary)}`);
+        return axiosAgent.post(`queue/insert`, queueDictionary)
+            .catch(error => console.error(error));
+    }
 
+    async removeFromQueues(user_id) {
+        // console.log(`API_Interface::removeFromQueues`);
+        return axiosAgent.post(`queue/remove/${user_id}`, {user_id})
+            .catch(error => console.error(error));
+    }
+
+    async updateStats(user_id, damage_done, healing_done) {
         return axiosAgent.put(`stats/${user_id}/${damage_done}/${healing_done}`);
     }
 
@@ -71,17 +82,17 @@ export default class APIInterface {
 
     async grabBeginnerQueue(role_id) {
 
-        return axiosAgent.get(`queue/${role_id}`);
+        return axiosAgent.get(`queue/beginner/${role_id}`);
     }
 
     async grabIntermediateQueue(role_id) {
 
-        return axiosAgent.get(`queue/${role_id}`);
+        return axiosAgent.get(`queue/intermediate/${role_id}`);
     }
 
     async grabExpertQueue(role_id) {
 
-        return axiosAgent.get(`queue/${role_id}`);
+        return axiosAgent.get(`queue/expert/${role_id}`);
     }
 
 }

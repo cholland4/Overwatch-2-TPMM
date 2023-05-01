@@ -48,9 +48,11 @@ const queueRouter = require('koa-router')({
 });
 
 queueRouter.use(VerifyJWT);
-queueRouter.get('/:role_id', QueueController.numInBeginnerQueue);
-queueRouter.get('/:role_id', QueueController.numInIntermediateQueue);
-queueRouter.get('/:role_id', QueueController.numInExpertQueue);
+queueRouter.get('/beginner/:role_id', QueueController.numInBeginnerQueue);
+queueRouter.get('/intermediate/:role_id', QueueController.numInIntermediateQueue);
+queueRouter.get('/expert/:role_id', QueueController.numInExpertQueue);
+queueRouter.post('/insert', QueueController.insertUser);
+queueRouter.post('/remove/:user_id', QueueController.removeUser);
 
 
 const StatisticsController = require('../app/Controllers/StatisticsController.js');
@@ -58,8 +60,8 @@ const statisticsRouter = require('koa-router')({
     prefix: '/stats'
 });
 
-statisticsRouter.get('/:user_id/ranks', StatisticsController.UserRanks, (err) => console.log("database_routes.js: login-route error:", err));
-statisticsRouter.get('/:user_id/stats', StatisticsController.getStats, (err) => console.log("database_routes.js: login-route error:", err));
+statisticsRouter.get('/:user_id/ranks', StatisticsController.UserRanks);
+statisticsRouter.get('/:user_id/stats', StatisticsController.getStats);
 statisticsRouter.use(VerifyJWT);
 statisticsRouter.put('/:role_id/:damage_done/:healing_done', StatisticsController.updateStats);
 
