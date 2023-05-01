@@ -220,13 +220,32 @@ const createUser = async(ctx) => {
         console.log(`API server::createUser: ${JSON.stringify(ctx.request.body)}`);
         console.log(`API server::createUser after having added default values: ${JSON.stringify(valuesToInsert)}`);
         console.log('x: ', valuesToInsert);
-        const query = `
+        const queryUser = `
                        INSERT INTO users (${userTableAttributes})
                               VALUES (${valueMarkers})
                         `;
+
+        const queryStats = `
+                       INSERT INTO statistics (user_id) VALUES (?)
+                        `;
         dbConnection.query({
-            sql: query,
+            sql: queryUser,
             values: attributeValuesArray
+        }, (error, tuples) => {
+            if (error) {
+                console.log("Connection error in LoginController::createUser", error);
+                ctx.body = [];
+                ctx.status = 200;
+                return reject(error);
+            }
+            ctx.body = tuples;
+            ctx.status = 200;
+            return resolve();
+        });
+
+        dbConnection.query({
+            sql: queryStats,
+            values: valuesToInsert.user_id
         }, (error, tuples) => {
             if (error) {
                 console.log("Connection error in LoginController::createUser", error);

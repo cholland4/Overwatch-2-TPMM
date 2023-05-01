@@ -50,7 +50,17 @@ export default class APIInterface {
     }
 
     async getUserRanks(user_id) {
-        return axiosAgent.get(`stats/${user_id}`)
+        return axiosAgent.get(`stats/${user_id}/ranks`)
+            .then(userInfo => userInfo.data)
+            .catch(error => (
+                {
+                    error,
+                    user: undefined
+                }));
+    }
+
+    async getUserStats(user_id) {
+        return axiosAgent.get(`stats/${user_id}/stats`)
             .then(userInfo => userInfo.data)
             .catch(error => (
                 {

@@ -150,7 +150,6 @@ function ChooseRole(props) {
         <Fragment>
 
             <div style={{textAlign:'center'}} >
-                {/*<Button style={{position:'absolute', right:'15px'}} variant="contained" onClick={setSelectedItem('Profile')}>Profile</Button>*/}
                 <Typography marginTop={2} boxShadow={'0px 5px 15px 0 rgba(0, 0, 0,0.2)'} variant={'h3'}>Select a Role To Join Queue</Typography>
                 <Grid container
                       sx={{margin: 'auto',
@@ -536,6 +535,16 @@ function UserProfile(props) {
     const [tankRank, setTankRank] = useState(2450);
     const [dpsRank, setDpsRank] = useState(2450);
     const [supportRank, setSupportRank] = useState(2450);
+    const [tankWins, setTankWins] = useState(0);
+    const [dpsWins, setDpsWins] = useState(0);
+    const [supportWins, setSupportWins] = useState(0);
+    const [tankGames, setTankGames] = useState(0);
+    const [dpsGames, setDpsGames] = useState(0);
+    const [supportGames, setSupportGames] = useState(0);
+
+
+    const [damageDone, setDamageDone] = useState(0);
+    const [healingDone, setHealingDone] = useState(0);
 
 
     useEffect(() => {
@@ -548,9 +557,21 @@ function UserProfile(props) {
 
             const ranks = await api.getUserRanks(new_user_id);
 
+            const stats = await api.getUserStats(new_user_id);
+
             setTankRank(ranks.user.tank_rank);
             setDpsRank(ranks.user.dps_rank);
             setSupportRank(ranks.user.support_rank);
+            setTankWins(stats.user.tank_wins);
+            setDpsWins(stats.user.dps_wins);
+            setSupportWins(stats.user.support_wins);
+            setTankGames(stats.user.tank_games);
+            setDpsGames(stats.user.dps_games);
+            setSupportGames(stats.user.support_games);
+
+            setDamageDone(stats.user.damage_done);
+            setHealingDone(stats.user.healing_done);
+
         }
 
         getUserData();
@@ -563,35 +584,38 @@ function UserProfile(props) {
             <div style={{textAlign:'center'}}>
                 <Typography variant={'h3'} marginBottom={'15px'}>{String(user).split('-')[0]}'s Profile</Typography>
 
-                <Box>
-                    <Box style={{backgroundColor:'lightgray',
-                        width:'32%', float:'left', padding:'2px', margin:'3px'}}>
+                <Box my={5}>
+                    <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
+                        backgroundColor: '#0080FF', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 128, 255,5)'}}>
                         <Typography variant={'h5'}>TANK</Typography>
-                        <Typography variant={'h6'}>{tankRank}</Typography>
+                        <Typography variant={'h6'}>Rank - {tankRank}</Typography>
+                        <Typography variant={'h6'}>Winrate - {tankWins / tankGames ? (tankWins / tankGames) * 100 : 0}%</Typography>
                     </Box>
-                    <Box style={{backgroundColor:'lightgray',
-                        width:'32%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
+                        backgroundColor: '#FF8C00', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 102, 0,5)'}}>
                         <Typography variant={'h5'}>DPS</Typography>
-                        <Typography variant={'h6'}>{dpsRank}</Typography>
+                        <Typography variant={'h6'}>Rank - {dpsRank}</Typography>
+                        <Typography variant={'h6'}>Winrate - {dpsWins / dpsGames ? (dpsWins / dpsGames) * 100 : 0}%</Typography>
                     </Box>
-                    <Box style={{backgroundColor:'lightgray',
-                        width:'32%', float:'left', padding:'2px', margin:'3px'}}>
+                    <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
+                        backgroundColor: '#FF4136', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54,5)'}}>
                         <Typography variant={'h5'}>SUPPORT</Typography>
-                        <Typography variant={'h6'}>{supportRank}</Typography>
+                        <Typography variant={'h6'}>Rank - {supportRank}</Typography>
+                        <Typography variant={'h6'}>Winrate - {supportWins / supportGames ? (supportWins / supportGames) * 100 : 0}%</Typography>
                     </Box>
                 </Box>
 
 
-                <Box>
-                    <Box style={{backgroundColor:'lightgray',
-                        width:'48%', float:'left', padding:'2px', margin:'3px'}}>
-                        <Typography variant={'h5'}>Damage Per 10 Min</Typography>
-                        <Typography variant={'h6'}>TODO</Typography>
+                <Box style={{marginTop: '200px'}}>
+                    <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
+                        backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
+                        <Typography variant={'h5'}>Average Damage Per Game (Tank & DPS)</Typography>
+                        <Typography variant={'h6'}>{damageDone / (tankGames + dpsGames) ? damageDone / (tankGames + dpsGames) : 0}</Typography>
                     </Box>
-                    <Box style={{backgroundColor:'lightgray',
-                        width:'48%', float:'left', padding:'2px', margin:'3px'}}>
-                        <Typography variant={'h5'}>Healing Per 10 Min</Typography>
-                        <Typography variant={'h6'}>TODO</Typography>
+                    <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
+                        backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
+                        <Typography variant={'h5'}>Average Healing Per Game (Support)</Typography>
+                        <Typography variant={'h6'}>{healingDone / (supportGames) ? healingDone / (supportGames) : 0}</Typography>
                     </Box>
                 </Box>
 

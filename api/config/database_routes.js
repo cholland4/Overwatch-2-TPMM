@@ -58,7 +58,8 @@ const statisticsRouter = require('koa-router')({
     prefix: '/stats'
 });
 
-statisticsRouter.get('/:user_id', StatisticsController.UserRanks, (err) => console.log("database_routes.js: login-route error:", err));
+statisticsRouter.get('/:user_id/ranks', StatisticsController.UserRanks, (err) => console.log("database_routes.js: login-route error:", err));
+statisticsRouter.get('/:user_id/stats', StatisticsController.getStats, (err) => console.log("database_routes.js: login-route error:", err));
 statisticsRouter.use(VerifyJWT);
 statisticsRouter.put('/:role_id/:damage_done/:healing_done', StatisticsController.updateStats);
 

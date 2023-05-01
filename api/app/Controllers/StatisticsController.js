@@ -42,9 +42,6 @@ const UserRanks = async (ctx) => {
     });
 }
 
-
-
-
 const updateStats = async (ctx) => {
     return new Promise((resolve, reject) => {
         const query = `UPDATE statistics SET damage_done =?, healing_done =? WHERE user_id=?`;
@@ -67,11 +64,50 @@ const updateStats = async (ctx) => {
     });
 }
 
+const getStats = async (ctx) => {
+    return new Promise((resolve, reject) => {
+        const u_id = ctx.params.user_id.replace('#','-');
+
+        let query = "SELECT tank_wins, tank_games, dps_wins, dps_games, support_wins, support_games, damage_done, healing_done FROM statistics WHERE user_id = ?";
+        dbConnection.query(
+            {
+                sql: query,
+                values: [u_id]
+            }, (error, tuples) => {
+                if (error) {
+                    console.log("Query error.", error);
+                    return reject(`Query error. Error msg: ${error}`);
+                }
+                if (tuples.length === 1) {  // Did we have a matching user record?
+                    setAccessToken(ctx, tuples[0]);
+                    console.log('from user database. About to return ', tuples[0]);
+                    ctx.body = {
+                        status: "OK",
+                        user: tuples[0],
+                    };
+                } else {
+                    console.log('Not able to identify the user.');
+                    return reject('No such user.');
+                }
+                return resolve();
+            }
+        )
+    }).catch(err => {
+        console.log('authorize in StatisticsController threw an exception. Reason...', err);
+        ctx.status = 200;
+        ctx.body = {
+            status: "Failed",
+            error: err,
+            user: null
+        };
+    });
+}
+
 
 module.exports = {
     UserRanks,
-    updateStats
-
+    updateStats,
+    getStats
 };
 
 
