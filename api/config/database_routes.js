@@ -53,6 +53,7 @@ queueRouter.get('/intermediate/:role_id', QueueController.numInIntermediateQueue
 queueRouter.get('/expert/:role_id', QueueController.numInExpertQueue);
 queueRouter.post('/insert', QueueController.insertUser);
 queueRouter.post('/remove/:user_id', QueueController.removeUser);
+queueRouter.post('/matchmake', QueueController.matchmake);
 
 
 const StatisticsController = require('../app/Controllers/StatisticsController.js');

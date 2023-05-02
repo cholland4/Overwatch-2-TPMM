@@ -56,6 +56,13 @@ export default class APIInterface {
             .catch(error => console.error(error));
     }
 
+    async removeMultipleFromQueues(user_ids) {
+        // console.log(`API_Interface::removeFromQueues`);
+        user_ids.forEach((user_id) => {axiosAgent.post(`queue/remove/${user_id}`, {user_id})
+            .catch(error => console.error(error));
+        });
+    }
+
     async updateStats(user_id, damage_done, healing_done) {
         return axiosAgent.put(`stats/${user_id}/${damage_done}/${healing_done}`);
     }
@@ -93,6 +100,13 @@ export default class APIInterface {
     async grabExpertQueue(role_id) {
 
         return axiosAgent.get(`queue/expert/${role_id}`);
+    }
+
+    async startMatchmake(queueDictionary) {
+        console.log(`API_Interface::startMatchmake: queueDictionary contains: ${JSON.stringify(queueDictionary)}`);
+        return axiosAgent.post(`queue/matchmake`, queueDictionary)
+            .then(mmInfo => mmInfo.data)
+            .catch(error => console.error(error));
     }
 
 }

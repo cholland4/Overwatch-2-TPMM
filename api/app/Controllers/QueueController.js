@@ -150,7 +150,7 @@ const removeUser = async(ctx) => {
 
 const numInBeginnerQueue = async (ctx) => {
     return new Promise((resolve, reject) => {
-        const query = `SELECT DISTINCT user_id FROM beginner_queue WHERE role=?`;
+        const query = `SELECT DISTINCT user_id, role, rank_for_role_queued FROM beginner_queue WHERE role=?`;
         dbConnection.query({
             sql: query,
             values: ctx.params.role_id
@@ -173,7 +173,7 @@ const numInBeginnerQueue = async (ctx) => {
 
 const numInIntermediateQueue = async (ctx) => {
     return new Promise((resolve, reject) => {
-        const query = `SELECT DISTINCT user_id FROM intermediate_queue WHERE role=?`;
+        const query = `SELECT DISTINCT user_id, role, rank_for_role_queued FROM intermediate_queue WHERE role=?`;
         dbConnection.query({
             sql: query,
             values: ctx.params.role_id
@@ -196,7 +196,7 @@ const numInIntermediateQueue = async (ctx) => {
 
 const numInExpertQueue = async (ctx) => {
     return new Promise((resolve, reject) => {
-        const query = `SELECT DISTINCT user_id FROM expert_queue WHERE role=?`;
+        const query = `SELECT DISTINCT user_id, role, rank_for_role_queued FROM expert_queue WHERE role=?`;
         dbConnection.query({
             sql: query,
             values: ctx.params.role_id
@@ -216,11 +216,145 @@ const numInExpertQueue = async (ctx) => {
     });
 }
 
+
+function split(elem, tanks, damage, supports) {
+    switch (elem.role) {
+        case "tank":
+            tanks.push(elem);
+            break;
+        case "dps":
+            damage.push(elem);
+            break;
+        case "support":
+            supports.push(elem);
+            break;
+        default:
+            break;
+    }
+}
+
+function select(arr, num) {
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, num);
+}
+
+function balance(role) {
+    // balance within the role
+    let bestPair = [];
+    let average2 = 0;
+    let bestDifference = 5000;
+    let totalsr = 0;
+    role.forEach(element => {totalsr += element.rank_for_role_queued});
+
+    for (let i = 1; i < role.length; i++) {
+        let avg1 = (role[0].rank_for_role_queued + role[i].rank_for_role_queued) / 2;
+        let avg2 = (totalsr - role[0].rank_for_role_queued - role[i].rank_for_role_queued) / 2;
+        let difference = avg1 - avg2;
+        if (Math.abs(difference) < Math.abs(bestDifference)) {
+            average2 = avg2;
+            bestDifference = difference;
+            bestPair = [avg1, role[0].user_id, role[i].user_id];
+        }
+    }
+
+    let otherPair = [average2];
+    for (let i = 0; i < role.length; i++) {
+        if (bestPair.indexOf( role[i].user_id ) === -1) {
+            otherPair.push(role[i].user_id)
+        }
+    }
+    return [bestPair, otherPair];
+}
+
+const matchmake = async (ctx) => {
+    const queue = JSON.parse(JSON.stringify(ctx.request.body));
+
+    let tanks = [];
+    let damage = [];
+    let supports = [];
+    let team1 = [];
+    let team2 = [];
+
+    queue.forEach((elem) => split(elem, tanks, damage, supports));
+
+    // console.log(tanks, damage, supports);
+
+    let t = select(tanks, 2);
+    let d = balance(select(damage, 4));
+    let s = balance(select(supports, 4));
+
+    let dReverse = false
+    let sReverse = false
+    let tankDiff = Math.abs(t[0].rank_for_role_queued - t[1].rank_for_role_queued)
+    let dpsDiff = d[0][0] - d[1][0]
+    let suppDiff = s[0][0] - s[1][0]
+    let average1 = t[0].rank_for_role_queued
+    let average2 = t[1].rank_for_role_queued
+    team1.push(t[0].user_id);
+    team2.push(t[1].user_id);
+
+    // brute force calculation of combined sr average
+    let bestDiff = tankDiff + dpsDiff + suppDiff
+    if (Math.abs(tankDiff - dpsDiff + suppDiff) < Math.abs(bestDiff)) {
+        bestDiff = tankDiff - dpsDiff + suppDiff
+        sReverse = false;
+        dReverse = true;
+    }
+    if (Math.abs(tankDiff + dpsDiff - suppDiff) < Math.abs(bestDiff)){
+        bestDiff = tankDiff + dpsDiff - suppDiff
+        dReverse = false;
+        sReverse = true;
+    }
+    if (Math.abs(tankDiff - dpsDiff - suppDiff) < Math.abs(bestDiff)){
+        dReverse = true;
+        sReverse = true;
+    }
+
+    // add to team A or B depending on above calculations
+    if (dReverse){
+        team1.push(d[1][1]);
+        team1.push(d[1][2]);
+        team2.push(d[0][1]);
+        team2.push(d[0][2]);
+        average1 += d[1][0];
+        average2 += d[0][0];
+    }
+    else {
+        team1.push(d[0][1]);
+        team1.push(d[0][2]);
+        team2.push(d[1][1]);
+        team2.push(d[1][2]);
+        average1 += d[0][0];
+        average2 += d[1][0];
+    }
+
+    if (sReverse){
+        team1.push(s[1][1]);
+        team1.push(s[1][2]);
+        team2.push(s[0][1]);
+        team2.push(s[0][2]);
+        average1 += s[1][0];
+        average2 += s[0][0];
+    }
+    else {
+        team1.push(s[0][1]);
+        team1.push(s[0][2]);
+        team2.push(s[1][1]);
+        team2.push(s[1][2]);
+        average1 += s[0][0];
+        average2 += s[1][0];
+    }
+
+    ctx.body = ([team1, team2, Math.floor(average1 / 3), Math.floor(average2 / 3)]);
+    return [team1, team2, Math.floor(average1 / 3), Math.floor(average2 / 3)];
+}
+
 module.exports = {
     insertUser,
     removeUser,
     numInBeginnerQueue,
     numInIntermediateQueue,
-    numInExpertQueue
+    numInExpertQueue,
+    matchmake
 
 };

@@ -271,7 +271,7 @@ function ChooseRole(props) {
 
 
 function InQueueScreen(props) {
-    const {user, handleSelectedItem, currentQueue} = props;
+    const {user, handleSelectedItem, currentQueue, setTeam1, setTeam2, setLobbyAvg} = props;
     const user_id = String(user).replace('#', '-');
 
     const api = new API();
@@ -295,6 +295,8 @@ function InQueueScreen(props) {
     const [supports, setSupports] = useState(0);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [feedback, setFeedback] = useState('');
+
+    let queue = [];
     async function updateUsersInQueue(current_queue) {
         switch(current_queue) {
             case "beginner":
@@ -309,6 +311,20 @@ function InQueueScreen(props) {
                 const supportsInBeginnerQueue = await api.grabBeginnerQueue('support');
                 console.log(`users from beginner support ${JSON.stringify(supportsInBeginnerQueue)}`);
                 setSupports(supportsInBeginnerQueue.data.length);
+
+                if (tanksInBeginnerQueue.data.length >= 2 && dpsInBeginnerQueue.data.length >= 4 && supportsInBeginnerQueue.data.length >= 4){
+                    console.log('beginner queue satisfied');
+                    queue = [...tanksInBeginnerQueue.data, ...dpsInBeginnerQueue.data, ...supportsInBeginnerQueue.data];
+                    const matchmake = await api.startMatchmake(queue).then((mmInfo) => mmInfo);
+                    setTeam1(matchmake[0]);
+                    setTeam2(matchmake[1]);
+                    const lobbyAvg = ((matchmake[2] + matchmake[3]) / 2).toFixed(0);
+                    setLobbyAvg(lobbyAvg);
+
+                    handleSelectedItem('Lobby');
+
+                    await api.removeMultipleFromQueues([...matchmake[0], ...matchmake[1]]);
+                }
 
                 break;
             case "intermediate":
@@ -325,20 +341,48 @@ function InQueueScreen(props) {
                 console.log(`users from intermediate support ${JSON.stringify(supportsInIntermediateQueue)}`);
                 setSupports(supportsInIntermediateQueue.data.length);
 
+                if (tanksInIntermediateQueue.data.length >= 2 && dpsInIntermediateQueue.data.length >= 4 && supportsInIntermediateQueue.data.length >= 4){
+                    console.log('intermediate queue satisfied');
+                    queue = [...tanksInIntermediateQueue.data, ...dpsInIntermediateQueue.data, ...supportsInIntermediateQueue.data];
+                    const matchmake = await api.startMatchmake(queue).then((mmInfo) => mmInfo);
+                    setTeam1(matchmake[0]);
+                    setTeam2(matchmake[1]);
+                    const lobbyAvg = ((matchmake[2] + matchmake[3]) / 2).toFixed(0);
+                    setLobbyAvg(lobbyAvg);
+
+                    handleSelectedItem('Lobby');
+
+                    await api.removeMultipleFromQueues([...matchmake[0], ...matchmake[1]]);
+                }
+
 
                 break;
             case "expert":
-                const tanksInQueue = await api.grabExpertQueue('tank');
-                console.log(`users from expert tank ${JSON.stringify(tanksInQueue)}`);
-                setNumTanks(tanksInQueue.data.length);
+                const tanksInExpertQueue = await api.grabExpertQueue('tank');
+                console.log(`users from expert tank ${JSON.stringify(tanksInExpertQueue)}`);
+                setNumTanks(tanksInExpertQueue.data.length);
 
-                const dpsInQueue = await api.grabExpertQueue('dps');
-                console.log(`users from expert dps ${JSON.stringify(dpsInQueue)}`);
-                setDps(dpsInQueue.data.length);
+                const dpsInExpertQueue = await api.grabExpertQueue('dps');
+                console.log(`users from expert dps ${JSON.stringify(dpsInExpertQueue)}`);
+                setDps(dpsInExpertQueue.data.length);
 
-                const supportsInQueue = await api.grabExpertQueue('support');
-                console.log(`users from expert support ${JSON.stringify(supportsInQueue)}`);
-                setSupports(supportsInQueue.data.length);
+                const supportsInExpertQueue = await api.grabExpertQueue('support');
+                console.log(`users from expert support ${JSON.stringify(supportsInExpertQueue)}`);
+                setSupports(supportsInExpertQueue.data.length);
+
+                if (tanksInExpertQueue.data.length >= 2 && dpsInExpertQueue.data.length >= 4 && supportsInExpertQueue.data.length >= 4){
+                    console.log('expert queue satisfied');
+                    queue = [...tanksInExpertQueue.data, ...dpsInExpertQueue.data, ...supportsInExpertQueue.data];
+                    const matchmake = await api.startMatchmake(queue).then((mmInfo) => mmInfo);
+                    setTeam1(matchmake[0]);
+                    setTeam2(matchmake[1]);
+                    const lobbyAvg = ((matchmake[2] + matchmake[3]) / 2).toFixed(0);
+                    setLobbyAvg(lobbyAvg);
+
+                    handleSelectedItem('Lobby');
+
+                    await api.removeMultipleFromQueues([...matchmake[0], ...matchmake[1]]);
+                }
 
 
                 break;
@@ -369,7 +413,7 @@ function InQueueScreen(props) {
         const interval = setInterval(() => {
             updateUsersInQueue(currentQueue);
             // after this call need to also check if the queue was satisfied within the interval
-            checkIfQueueSatisfied();
+            // checkIfQueueSatisfied();
 
         }, 5000);
         // clean up interval on unmount
@@ -482,9 +526,9 @@ const Item = styled(Paper)(({ theme }) => ({
 
 
 function LobbyScreen(props) {
-    // const {team1, team2, lobby_avg} = props;
-    const team1 = ['player 1', 'player 2', 'player 3', 'player 4', 'player 5'];
-    const team2 = ['player 6', 'player 7', 'player 8', 'player 9', 'player 10'];
+    const {team1, team2, lobbyAvg} = props;
+    // const team1 = ['player 1', 'player 2', 'player 3', 'player 4', 'player 5'];
+    // const team2 = ['player 6', 'player 7', 'player 8', 'player 9', 'player 10'];
     // team1 and team2 will be an array of objects that contain at LEAST usernames
     // needs to come from props
 
@@ -493,7 +537,7 @@ function LobbyScreen(props) {
         console.log(csvData);
     }, [csvData]);
 
-    const lobby_avg = 2450;
+    // const lobby_avg = 2450;
     // lobby_avg is an integer between 0 and 5000, that is the average
     // calue of all users in the match
 
@@ -555,7 +599,7 @@ function LobbyScreen(props) {
                         spacing={1}
                         height={'100%'}>
                         <Item>
-                            {lobby_avg}
+                            {lobbyAvg}
                         </Item>
                     </Stack>
                 </Box>
@@ -650,19 +694,19 @@ function UserProfile(props) {
                         backgroundColor: '#0080FF', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 128, 255,5)'}}>
                         <Typography variant={'h5'}>TANK</Typography>
                         <Typography variant={'h6'}>Rank - {tankRank}</Typography>
-                        <Typography variant={'h6'}>Winrate - {tankWins / tankGames ? (tankWins / tankGames) * 100 : 0}%</Typography>
+                        <Typography variant={'h6'}>Winrate - {tankWins / tankGames ? ((tankWins / tankGames) * 100).toFixed(2) : 0}%</Typography>
                     </Box>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#FF8C00', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 102, 0,5)'}}>
                         <Typography variant={'h5'}>DPS</Typography>
                         <Typography variant={'h6'}>Rank - {dpsRank}</Typography>
-                        <Typography variant={'h6'}>Winrate - {dpsWins / dpsGames ? (dpsWins / dpsGames) * 100 : 0}%</Typography>
+                        <Typography variant={'h6'}>Winrate - {dpsWins / dpsGames ? ((dpsWins / dpsGames) * 100).toFixed(2) : 0}%</Typography>
                     </Box>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#FF4136', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54,5)'}}>
                         <Typography variant={'h5'}>SUPPORT</Typography>
                         <Typography variant={'h6'}>Rank - {supportRank}</Typography>
-                        <Typography variant={'h6'}>Winrate - {supportWins / supportGames ? (supportWins / supportGames) * 100 : 0}%</Typography>
+                        <Typography variant={'h6'}>Winrate - {supportWins / supportGames ? ((supportWins / supportGames) * 100).toFixed(2) : 0}%</Typography>
                     </Box>
                 </Box>
 
@@ -671,12 +715,12 @@ function UserProfile(props) {
                     <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
                         <Typography variant={'h5'}>Average Damage Per Game (Tank & DPS)</Typography>
-                        <Typography variant={'h6'}>{damageDone / (tankGames + dpsGames) ? damageDone / (tankGames + dpsGames) : 0}</Typography>
+                        <Typography variant={'h6'}>{damageDone / (tankGames + dpsGames) ? (damageDone / (tankGames + dpsGames)).toFixed(2) : 0}</Typography>
                     </Box>
                     <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
                         <Typography variant={'h5'}>Average Healing Per Game (Support)</Typography>
-                        <Typography variant={'h6'}>{healingDone / (supportGames) ? healingDone / (supportGames) : 0}</Typography>
+                        <Typography variant={'h6'}>{healingDone / (supportGames) ? (healingDone / (supportGames)).toFixed(2) : 0}</Typography>
                     </Box>
                 </Box>
 
@@ -689,7 +733,7 @@ function UserProfile(props) {
 
 
 const presentationComponents = (props) => {
-    const {user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue}=props;
+    const {user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue, team1, team2, setTeam1, setTeam2, lobbyAvg, setLobbyAvg}=props;
     return [
         {
             title: 'ChooseRole',
@@ -699,11 +743,14 @@ const presentationComponents = (props) => {
         {
             title: 'InQueue',
             component: <InQueueScreen user={user} currentQueue={currentQueue}
-                                      handleSelectedItem={handleSelectedItem}/>
+                                      handleSelectedItem={handleSelectedItem}
+                                      setTeam1={setTeam1} setTeam2={setTeam2}
+                                      setLobbyAvg={setLobbyAvg}/>
         },
         {
             title: 'Lobby',
-            component: <LobbyScreen/>
+            component: <LobbyScreen team1={team1} team2={team2} setTeam1={setTeam1}
+                                    setTeam2={setTeam2} lobbyAvg={lobbyAvg} setLobbyAvg={setLobbyAvg}/>
         },
         {
             title: 'Profile',
@@ -714,9 +761,9 @@ const presentationComponents = (props) => {
 
 
 
-const findSelectedComponent = (selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue) => {
-    // const {selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue} = props;
-    const component = [...presentationComponents({user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue})].filter(comp => comp.title === selectedItem);
+const findSelectedComponent = (props) => {
+    const {selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue, team1, team2, setTeam1, setTeam2, lobbyAvg, setLobbyAvg} = props;
+    const component = [...presentationComponents({user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue, team1, team2, setTeam1, setTeam2, lobbyAvg, setLobbyAvg})].filter(comp => comp.title === selectedItem);
     if (component.length === 1)
         return component[0];
 
@@ -732,6 +779,9 @@ export default function MainDrawer({title, user, logoutAction}) {
     const [selectedItem, setSelectedItem] = useState('Profile');
     const [inQueue, setInQueue] = useState(false);
     const [currentQueue, setCurrentQueue] = useState('none');
+    const [team1, setTeam1] = useState([]);
+    const [team2, setTeam2] = useState([]);
+    const [lobbyAvg, setLobbyAvg] = useState(0);
 
     // console.log('in MainDrawer');
 
@@ -749,7 +799,7 @@ export default function MainDrawer({title, user, logoutAction}) {
             <TopBar title={title} inQueue={inQueue} handleSelectedItem={handleSelectedItem} user={user} logoutAction={logoutAction} />
             <Main sx={{marginLeft:'0px'}}>
                 <DrawerHeader />
-                {findSelectedComponent(selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue).component}
+                {findSelectedComponent({selectedItem, user, handleSelectedItem, setInQueue, currentQueue, setCurrentQueue, team1, team2, setTeam1, setTeam2, lobbyAvg, setLobbyAvg}).component}
             </Main>
         </Box>
     );
