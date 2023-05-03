@@ -258,6 +258,7 @@ const createUser = async(ctx) => {
         .catch(error => console.log(`insertNewUser failed with error message, ${error}`));
 }
 
+
 module.exports = {
     authorizeUser,
     createUser

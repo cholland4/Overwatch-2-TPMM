@@ -1,6 +1,8 @@
 const dbConnection = require('../../database/mySQLconnect');
 
 
+
+
 const insertUser = async(ctx) => {
     // this is called to Insert new users into the database when the create Account button is pressed
 
@@ -148,6 +150,92 @@ const removeUser = async(ctx) => {
         .catch(error => console.log(`insertNewUser failed with error message, ${error}`));
 }
 
+
+const addRank = async (ctx) => {
+    console.log(`API server::addRank: ${JSON.stringify(ctx.request.body)}`);
+
+    const role = ctx.params.role_id;
+
+    return new Promise((resolve, reject) => {
+        let query;
+
+        if (role === 'tank') {
+            query = `
+                       UPDATE users SET tank_rank= tank_rank + 25 WHERE user_id=?
+                        `;
+        }
+        else if (role === 'dps') {
+            query = `
+                       UPDATE users SET dps_rank= dps_rank + 25 WHERE user_id=?
+                        `;
+        }
+        else {
+            query = `
+                       UPDATE users SET support_rank= support_rank + 25 WHERE user_id=?
+                        `;
+        }
+        dbConnection.query({
+            sql: query,
+            values: [ctx.params.user_id]
+        }, (error, tuples) => {
+            if (error) {
+                console.log('Connection error in StatisticsController::updateStats', error);
+                return reject(error);
+            }
+            ctx.body = tuples;
+            ctx.status = 200;
+            return resolve();
+        });
+    }).catch(err => {
+        console.log('Database connection error in updateStats.', err);
+        ctx.body = [];
+        ctx.status = 500;
+    });
+}
+
+
+const subtractRank = async (ctx) => {
+    console.log(`API server::subtractRank: ${JSON.stringify(ctx.request.body)}`);
+
+    const role = ctx.params.role_id;
+
+    return new Promise((resolve, reject) => {
+        let query;
+
+        if (role === 'tank') {
+            query = `
+                       UPDATE users SET tank_rank= tank_rank - 25 WHERE user_id=?
+                        `;
+        }
+        else if (role === 'dps') {
+            query = `
+                       UPDATE users SET dps_rank= dps_rank - 25 WHERE user_id=?
+                        `;
+        }
+        else {
+            query = `
+                       UPDATE users SET support_rank= support_rank - 25 WHERE user_id=?
+                        `;
+        }
+        dbConnection.query({
+            sql: query,
+            values: [ctx.params.user_id]
+        }, (error, tuples) => {
+            if (error) {
+                console.log('Connection error in StatisticsController::updateStats', error);
+                return reject(error);
+            }
+            ctx.body = tuples;
+            ctx.status = 200;
+            return resolve();
+        });
+    }).catch(err => {
+        console.log('Database connection error in updateStats.', err);
+        ctx.body = [];
+        ctx.status = 500;
+    });
+}
+
 const numInBeginnerQueue = async (ctx) => {
     return new Promise((resolve, reject) => {
         const query = `SELECT DISTINCT user_id, role, rank_for_role_queued FROM beginner_queue WHERE role=?`;
@@ -156,7 +244,7 @@ const numInBeginnerQueue = async (ctx) => {
             values: ctx.params.role_id
         }, (error, tuples) => {
             if (error) {
-                console.log('Connection error in TransactionsController::transactionsForRoute', error);
+                console.log('Connection error in QueueController::numInBeginnerQueue', error);
                 return reject(error);
             }
             ctx.body = tuples;
@@ -164,7 +252,7 @@ const numInBeginnerQueue = async (ctx) => {
             return resolve();
         });
     }).catch(err => {
-        console.log('Database connection error in transactionsForRoute.', err);
+        console.log('Database connection error in numInBeginnerQueue.', err);
         ctx.body = [];
         ctx.status = 500;
     });
@@ -179,7 +267,7 @@ const numInIntermediateQueue = async (ctx) => {
             values: ctx.params.role_id
         }, (error, tuples) => {
             if (error) {
-                console.log('Connection error in TransactionsController::transactionsForRoute', error);
+                console.log('Connection error in QueueController::numInIntermediateQueue', error);
                 return reject(error);
             }
             ctx.body = tuples;
@@ -187,7 +275,7 @@ const numInIntermediateQueue = async (ctx) => {
             return resolve();
         });
     }).catch(err => {
-        console.log('Database connection error in transactionsForRoute.', err);
+        console.log('Database connection error in numInIntermediateQueue.', err);
         ctx.body = [];
         ctx.status = 500;
     });
@@ -202,7 +290,7 @@ const numInExpertQueue = async (ctx) => {
             values: ctx.params.role_id
         }, (error, tuples) => {
             if (error) {
-                console.log('Connection error in TransactionsController::transactionsForRoute', error);
+                console.log('Connection error in QueueController::numInExpertQueue', error);
                 return reject(error);
             }
             ctx.body = tuples;
@@ -210,11 +298,12 @@ const numInExpertQueue = async (ctx) => {
             return resolve();
         });
     }).catch(err => {
-        console.log('Database connection error in transactionsForRoute.', err);
+        console.log('Database connection error in numInExpertQueue.', err);
         ctx.body = [];
         ctx.status = 500;
     });
 }
+
 
 
 function split(elem, tanks, damage, supports) {
@@ -355,6 +444,9 @@ module.exports = {
     numInBeginnerQueue,
     numInIntermediateQueue,
     numInExpertQueue,
-    matchmake
+    matchmake,
+    addRank,
+    subtractRank
+
 
 };

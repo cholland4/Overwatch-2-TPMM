@@ -54,6 +54,9 @@ queueRouter.get('/expert/:role_id', QueueController.numInExpertQueue);
 queueRouter.post('/insert', QueueController.insertUser);
 queueRouter.post('/remove/:user_id', QueueController.removeUser);
 queueRouter.post('/matchmake', QueueController.matchmake);
+queueRouter.put('/:user_id/:role_id/addRank', QueueController.addRank);
+queueRouter.put('/:user_id/:role_id/subtractRank', QueueController.subtractRank);
+
 
 
 const StatisticsController = require('../app/Controllers/StatisticsController.js');
@@ -61,10 +64,14 @@ const statisticsRouter = require('koa-router')({
     prefix: '/stats'
 });
 
+
 statisticsRouter.get('/:user_id/ranks', StatisticsController.UserRanks);
+
 statisticsRouter.get('/:user_id/stats', StatisticsController.getStats);
 statisticsRouter.use(VerifyJWT);
-statisticsRouter.put('/:role_id/:damage_done/:healing_done', StatisticsController.updateStats);
+statisticsRouter.put('/:user_id/:damage_done/:healing_done', StatisticsController.updateStats);
+statisticsRouter.put('/winner', StatisticsController.updateWins);
+statisticsRouter.put('/loser', StatisticsController.updateGames);
 
 
 /**

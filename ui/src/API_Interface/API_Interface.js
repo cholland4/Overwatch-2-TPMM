@@ -50,6 +50,7 @@ export default class APIInterface {
             .catch(error => console.error(error));
     }
 
+
     async removeFromQueues(user_id) {
         // console.log(`API_Interface::removeFromQueues`);
         return axiosAgent.post(`queue/remove/${user_id}`, {user_id})
@@ -65,6 +66,24 @@ export default class APIInterface {
 
     async updateStats(user_id, damage_done, healing_done) {
         return axiosAgent.put(`stats/${user_id}/${damage_done}/${healing_done}`);
+    }
+
+    async updateWin(user_id, role) {
+        const data = { user_id, role };
+        return axiosAgent.put(`stats/winner`, data);
+    }
+
+    async updateGame(user_id, role) {
+        const data = { user_id, role };
+        return axiosAgent.put(`stats/loser`, data);
+    }
+
+    async addRank(user_id, role) {
+        return axiosAgent.put(`queue/${user_id}/${role}/addRank`);
+    }
+
+    async subtractRank(user_id, role) {
+        return axiosAgent.put(`queue/${user_id}/${role}/subtractRank`)
     }
 
     async getUserRanks(user_id) {
@@ -108,5 +127,6 @@ export default class APIInterface {
             .then(mmInfo => mmInfo.data)
             .catch(error => console.error(error));
     }
+
 
 }

@@ -1,7 +1,6 @@
 import React, {Fragment, useEffect, useRef, useState} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -113,7 +112,8 @@ const TopBar = ({inQueue, handleSelectedItem, title, user, logoutAction}) => {
                             Queue
                         </Typography>
                     </Box>
-                    <Box width="100%" justifyContent="right" flex={1} >
+
+                    <Box width="100%" justifyContent="right" flex={1}>
                         <Typography variant="h7" noWrap component="div" align="right" onClick={() => logoutAction()}>
                             Logout
                         </Typography>
@@ -129,7 +129,6 @@ const TopBar = ({inQueue, handleSelectedItem, title, user, logoutAction}) => {
 function ChooseRole(props) {
 
     const {handleSelectedItem, setInQueue, setCurrentQueue, user} = props;
-
 
     async function addUserToQueue(role) {
         // api call for createUser
@@ -192,8 +191,10 @@ function ChooseRole(props) {
     const clickSupport = () => {
         handleSelectedItem("InQueue");
         addUserToQueue('support');
+
         setInQueue(true);
     }
+
 
 
 
@@ -271,8 +272,21 @@ function ChooseRole(props) {
 
 
 function InQueueScreen(props) {
+
     const {user, handleSelectedItem, currentQueue, setTeam1, setTeam2, setLobbyAvg} = props;
     const user_id = String(user).replace('#', '-');
+
+    // keeps track of number of each role in the current queue
+    const [tanks, setNumTanks] = useState(0);
+    const [dps, setDps] = useState(0);
+    const [supports, setSupports] = useState(0);
+
+    // these are used for the trivia game the users can play while waiting in queue
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(Math.floor(Math.random() * triviaQuestions.length));
+    const [numCorrectAnswers, setNumCorrectAnswers] = useState(0);
+    const [numWrongAnswers, setNumWrongAnswers] = useState(0);
+
+
 
     const api = new API();
 
@@ -283,18 +297,14 @@ function InQueueScreen(props) {
         marginBottom: "10px",
     };
 
-
     const quoteStyle = {
         height: "40px",
         marginRight: "10px",
         marginLeft: "10px"
     };
 
-    const [tanks, setNumTanks] = useState(0);
-    const [dps, setDps] = useState(0);
-    const [supports, setSupports] = useState(0);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [feedback, setFeedback] = useState('');
+
+
 
     let queue = [];
     async function updateUsersInQueue(current_queue) {
@@ -305,7 +315,9 @@ function InQueueScreen(props) {
                 setNumTanks(tanksInBeginnerQueue.data.length);
 
                 const dpsInBeginnerQueue = await api.grabBeginnerQueue('dps');
+
                 console.log(`users from beginner dps ${JSON.stringify(dpsInBeginnerQueue)}`);
+
                 setDps(dpsInBeginnerQueue.data.length);
 
                 const supportsInBeginnerQueue = await api.grabBeginnerQueue('support');
@@ -334,7 +346,9 @@ function InQueueScreen(props) {
                 setNumTanks(tanksInIntermediateQueue.data.length);
 
                 const dpsInIntermediateQueue = await api.grabIntermediateQueue('dps');
+
                 console.log(`users from intermediate dps ${JSON.stringify(dpsInIntermediateQueue)}`);
+
                 setDps(dpsInIntermediateQueue.data.length);
 
                 const supportsInIntermediateQueue = await api.grabIntermediateQueue('support');
@@ -362,9 +376,11 @@ function InQueueScreen(props) {
                 console.log(`users from expert tank ${JSON.stringify(tanksInExpertQueue)}`);
                 setNumTanks(tanksInExpertQueue.data.length);
 
+
                 const dpsInExpertQueue = await api.grabExpertQueue('dps');
                 console.log(`users from expert dps ${JSON.stringify(dpsInExpertQueue)}`);
                 setDps(dpsInExpertQueue.data.length);
+
 
                 const supportsInExpertQueue = await api.grabExpertQueue('support');
                 console.log(`users from expert support ${JSON.stringify(supportsInExpertQueue)}`);
@@ -399,12 +415,8 @@ function InQueueScreen(props) {
             // set team1 and team2 states
             // handleSelectedItem('Lobby');
         }
-        // logic to check if queue is satisfied and then update page to the lobby potentially right here
+
     }
-
-
-    // can uncomment this useEffect block of code if you want the timer to check every 5 seconds, can also change the 5000 value
-    // to change the amount of seconds it checks, 5000 = 5 seconds, 10000 = 10 seconds, etc.
 
 
 
@@ -416,21 +428,25 @@ function InQueueScreen(props) {
             // checkIfQueueSatisfied();
 
         }, 5000);
-        // clean up interval on unmount
         return () => clearInterval(interval);
     }, [currentQueue]);
 
 
+    // check queue right away upon loading of page
+    updateUsersInQueue(currentQueue);
+    checkIfQueueSatisfied();
+
 
 
     function handleAnswerSelect(selectedAnswer) {
+        // handles trivia questions
         const currentQuestion = triviaQuestions[currentQuestionIndex];
         const isAnswerCorrect = currentQuestion.answer === selectedAnswer;
 
         if (isAnswerCorrect) {
-            setFeedback(<CheckCircleIcon sx={{color: 'green', fontSize: 40}} />);
+            setNumCorrectAnswers(numCorrectAnswers + 1);
         } else {
-            setFeedback(<HighlightOffIcon sx={{color: 'red', fontSize: 40}} />);
+            setNumWrongAnswers(numWrongAnswers + 1);
         }
 
         const randomIndex = Math.floor(Math.random() * triviaQuestions.length);
@@ -438,6 +454,8 @@ function InQueueScreen(props) {
     }
 
     const currentQuestion = triviaQuestions[currentQuestionIndex];
+    const totalQuestionsAnswered = numCorrectAnswers + numWrongAnswers;
+    const percentCorrect = totalQuestionsAnswered > 0 ? Math.floor(numCorrectAnswers / totalQuestionsAnswered * 100) : 0;
 
     const handleLeaveQueue = () => {
         api.removeFromQueues(user_id);
@@ -447,6 +465,12 @@ function InQueueScreen(props) {
 
     return (
         <Fragment>
+            <Box >
+                <button onClick={handleLeaveQueue}
+                        style={{backgroundColor: '#FF4136', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54, 0.5)'}}>
+                    <Typography color={'white'}> Leave Queue </Typography>
+                </button>
+            </Box>
             <div style={{textAlign:'center'}}>
                 <Typography variant={'h3'}>Waiting to fill up {currentQueue} Queue...</Typography>
                 <Grid container
@@ -471,15 +495,10 @@ function InQueueScreen(props) {
                         <Typography variant="h3">{supports}/4</Typography>
                     </Grid>
                 </Grid>
-                <Box marginTop={'25px'}>
-                    <button onClick={handleLeaveQueue}
-                            style={{backgroundColor: 'lightgray', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
-                        Leave Queue
-                    </button>
-                </Box>
+
             </div>
             <div style={{textAlign: 'center'}}>
-                <Box sx={{justify: 'center', marginTop: 10}}>
+                <Box sx={{justify: 'center', marginTop: 8}}>
                     <div style={quotesStyle}>
                         <img
                             src={left_quote}
@@ -504,9 +523,42 @@ function InQueueScreen(props) {
                             </li>
                         ))}
                     </ul>
-                    <Box marginLeft={5}>
-                        {feedback}
+
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent='center'
+                        marginTop={2}
+                        marginLeft={2}
+                    >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <CheckCircleIcon sx={{ color: "green", fontSize: 40 }} />
+                            <Box marginLeft={1}>
+                                <Typography variant="subtitle1">{numCorrectAnswers}</Typography>
+                            </Box>
+                        </Box>
+                        <Box marginLeft={2} marginRight={2}>
+                            |
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <HighlightOffIcon sx={{ color: "red", fontSize: 40 }} />
+                            <Box marginLeft={1}>
+                                <Typography variant="subtitle1">{numWrongAnswers}</Typography>
+                            </Box>
+                        </Box>
+                        <Box
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            marginLeft={2}
+                        >
+                            <Typography variant="subtitle2" fontWeight="bold">
+                                {percentCorrect}%
+                            </Typography>
+                            <Typography variant="subtitle2">Correct</Typography>
+                        </Box>
                     </Box>
+
 
                 </Box>
             </div>
@@ -526,20 +578,127 @@ const Item = styled(Paper)(({ theme }) => ({
 
 
 function LobbyScreen(props) {
-    const {team1, team2, lobbyAvg} = props;
+
+    const {team1, team2, lobbyAvg, handleSelectedItem} = props;
     // const team1 = ['player 1', 'player 2', 'player 3', 'player 4', 'player 5'];
     // const team2 = ['player 6', 'player 7', 'player 8', 'player 9', 'player 10'];
-    // team1 and team2 will be an array of objects that contain at LEAST usernames
-    // needs to come from props
+
 
     const [csvData, setCsvData] = useState([]);
-    useEffect(() => {
-        console.log(csvData);
-    }, [csvData]);
+    const [winner, setWinner] = useState(null);
 
-    // const lobby_avg = 2450;
-    // lobby_avg is an integer between 0 and 5000, that is the average
-    // calue of all users in the match
+    const api = new API();
+
+    const handleWinnerSelect = (selectedTeam) => {
+        setWinner(selectedTeam);
+
+        // brute forces through updating all ranks and wins/games
+
+
+        if (selectedTeam === 'team1') {
+
+            // update winners
+            addRanks(team1[0], 'tank');
+            updateWins(team1[0], 'tank');
+
+            addRanks(team1[1], 'dps');
+            updateWins(team1[1], 'dps');
+
+            addRanks(team1[2], 'dps');
+            updateWins(team1[2], 'dps');
+
+            addRanks(team1[3], 'support');
+            updateWins(team1[3], 'support');
+
+            addRanks(team1[4], 'support');
+            updateWins(team1[4], 'support');
+
+
+            //update losers
+            subtractRanks(team2[0], 'tank');
+            updateGames(team2[0], 'tank');
+
+            subtractRanks(team2[1], 'dps');
+            updateGames(team2[1], 'dps');
+
+            subtractRanks(team2[2], 'dps');
+            updateGames(team2[2], 'dps');
+
+            subtractRanks(team2[3], 'support');
+            updateGames(team2[3], 'support');
+
+            subtractRanks(team2[4], 'support');
+            updateGames(team2[4], 'support');
+
+        }
+        else {
+            // update winners
+            addRanks(team2[0], 'tank');
+            updateWins(team2[0], 'tank');
+
+            addRanks(team2[1], 'dps');
+            updateWins(team2[1], 'dps');
+
+            addRanks(team2[2], 'dps');
+            updateWins(team2[2], 'dps');
+
+            addRanks(team2[3], 'support');
+            updateWins(team2[3], 'support');
+
+            addRanks(team2[4], 'support');
+            updateWins(team2[4], 'support');
+
+
+            // update losers
+            subtractRanks(team1[0], 'tank');
+            updateGames(team1[0], 'tank');
+
+            subtractRanks(team1[1], 'dps');
+            updateGames(team1[1], 'dps');
+
+            subtractRanks(team1[2], 'dps');
+            updateGames(team1[2], 'dps');
+
+            subtractRanks(team1[3], 'support');
+            updateGames(team1[3], 'support');
+
+            subtractRanks(team1[4], 'support');
+            updateGames(team1[4], 'support');
+
+        }
+
+    };
+
+    async function addRanks(user_id, role) {
+        // call to add 25 rank to winning players
+        await api.addRank(user_id, role);
+    }
+
+    async function subtractRanks(user_id, role) {
+        // call to subtract 25 rank to losing players
+        await api.subtractRank(user_id, role);
+    }
+
+    async function updateWins(user_id, role) {
+        // update wins for specified role for winning players
+        await api.updateWin(user_id, role);
+    }
+
+    async function updateGames(user_id, role) {
+        // still update games played for losing players
+        await api.updateGame(user_id, role);
+    }
+
+
+    async function updateStats(user_id, damage_done, healing_done) {
+        // update statistics after csv file is uploaded
+        await api.updateStats(user_id, damage_done, healing_done);
+
+    }
+
+
+
+
 
 
     // handle the CSV file uploading
@@ -556,18 +715,52 @@ function LobbyScreen(props) {
             const result = [];
 
             for (let i = 1; i < lines.length; i++) {
-                const obj = {};
                 const currentline = lines[i].split(',');
 
-                obj["Player Name"] = currentline[4];
-                obj["Hero Damage Dealt"] = currentline[11];
-                obj["Healing Dealt"] = currentline[12];
+                const playerName = currentline[4];
+                const heroDamageDealt = parseInt(currentline[11]);
+                const healingDealt = parseInt(currentline[12]);
 
-                result.push(obj);
+                const existingPlayer = result.find(player => player["Player Name"] === playerName);
+                if (existingPlayer) {
+                    existingPlayer["Hero Damage Dealt"] += heroDamageDealt;
+                    existingPlayer["Healing Dealt"] += healingDealt;
+                } else {
+                    result.push({
+                        "Player Name": playerName,
+                        "Hero Damage Dealt": heroDamageDealt,
+                        "Healing Dealt": healingDealt
+                    });
+                }
+            }
+
+            const user_name_mapping = {};
+
+        // Loop through team1 and team2 mapping each player name to its user_id in the database
+            for (const user_id of team1) {
+                const playerName = user_id.replace(/-\d+/, '');
+                user_name_mapping[playerName] = user_id;
+            }
+
+
+            for (const user_id of team2) {
+                const playerName = user_id.replace(/-\d+/, '');
+                user_name_mapping[playerName] = user_id;
             }
 
             setCsvData(result);
+
+            for (const player of result) {
+                const userId = user_name_mapping[player['Player Name']];
+                const damageDealt = player['Hero Damage Dealt'];
+                const healingDealt = player['Healing Dealt'];
+
+                updateStats(userId, damageDealt, healingDealt);
+
+                }
+
             console.log(csvData);
+            //console.log(user_name_mapping);
         };
 
     };
@@ -576,9 +769,9 @@ function LobbyScreen(props) {
     return (
         <Fragment>
             <div style={{textAlign:'center'}}>
-                <Typography variant={'h3'}>Queue</Typography>
+                <Typography variant={'h3'}>Lobby</Typography>
                 <Box style={{backgroundColor:'lightgray',
-                    width:'39%', float:'left', padding:'2px', margin:'3px'}}>
+                    width:'39%', float:'left', padding:'2px', margin:'3px', marginTop: '10px'}}>
                     <Typography variant={'h5'}>Team 1</Typography>
                     <Stack divider={<Divider orientation="horizontal" flexItem />}>
                         {
@@ -591,7 +784,7 @@ function LobbyScreen(props) {
                     </Stack>
                 </Box>
                 <Box style={{backgroundColor:'lightgray',
-                    width:'19%', float:'left', padding:'2px', margin:'3px'}}>
+                    width:'19%', float:'left', padding:'2px', margin:'3px', marginTop: '10px'}}>
                     <Typography variant={'h5'}>Average</Typography>
                     <Stack
                         alignContent={'center'}
@@ -604,7 +797,7 @@ function LobbyScreen(props) {
                     </Stack>
                 </Box>
                 <Box style={{backgroundColor:'lightgray',
-                    width:'39%', float:'left', padding:'2px', margin:'3px'}}>
+                    width:'39%', float:'left', padding:'2px', margin:'3px', marginTop: '10px'}}>
                     <Typography variant={'h5'}>Team 2</Typography>
                     <Stack divider={<Divider orientation="horizontal" flexItem />}>
                         {
@@ -616,9 +809,30 @@ function LobbyScreen(props) {
                         }
                     </Stack>
                 </Box>
-                <Button variant="contained">Report Winner</Button>
+                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", marginTop: "50px", flexDirection: "column" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                        <Button variant="contained" onClick={() => handleWinnerSelect('team1')} style={{marginRight: '50px', marginTop: "50px"}}>
+                            Report Winner - Team 1
+                        </Button>
+                        <Button variant="contained" onClick={() => handleWinnerSelect('team2')} style={{marginLeft: '50px', marginTop: "50px"}}>
+                            Report Winner - Team 2
+                        </Button>
+                    </Box>
+                    {winner && (
+                        <Box sx={{ justifyContent: "center", marginTop: "15px" }}>
+                            <Typography variant="body1" fontWeight={'bold'}>
+                                Winner selected: {winner}
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "center", width: "100%", marginTop: "50px" }}>
+                    <Button color={"secondary"} variant="contained" onClick={() => handleSelectedItem('Profile')} >
+                        Return to your profile
+                    </Button>
+                </Box>
                 <Box sx={{justify: 'flex', alignContent: 'center'}}>
-                    <div style={ {marginTop: 350, justifySelf: 'center', marginLeft: 'auto', marginRight: 'auto'}}>
+                    <div style={ {marginTop: 250, justifySelf: 'center', marginLeft: 'auto', marginRight: 'auto'}}>
 
                         <Typography variant='h5' style={{marginBottom: 25, marginTop: 5}}> Upload your statistics post match!</Typography>
 
@@ -677,6 +891,7 @@ function UserProfile(props) {
             setDamageDone(stats.user.damage_done);
             setHealingDone(stats.user.healing_done);
 
+
         }
 
         getUserData();
@@ -695,18 +910,23 @@ function UserProfile(props) {
                         <Typography variant={'h5'}>TANK</Typography>
                         <Typography variant={'h6'}>Rank - {tankRank}</Typography>
                         <Typography variant={'h6'}>Winrate - {tankWins / tankGames ? ((tankWins / tankGames) * 100).toFixed(2) : 0}%</Typography>
+
                     </Box>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#FF8C00', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 102, 0,5)'}}>
                         <Typography variant={'h5'}>DPS</Typography>
                         <Typography variant={'h6'}>Rank - {dpsRank}</Typography>
+
                         <Typography variant={'h6'}>Winrate - {dpsWins / dpsGames ? ((dpsWins / dpsGames) * 100).toFixed(2) : 0}%</Typography>
+
                     </Box>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#FF4136', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54,5)'}}>
                         <Typography variant={'h5'}>SUPPORT</Typography>
                         <Typography variant={'h6'}>Rank - {supportRank}</Typography>
+
                         <Typography variant={'h6'}>Winrate - {supportWins / supportGames ? ((supportWins / supportGames) * 100).toFixed(2) : 0}%</Typography>
+
                     </Box>
                 </Box>
 
@@ -715,12 +935,16 @@ function UserProfile(props) {
                     <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
                         <Typography variant={'h5'}>Average Damage Per Game (Tank & DPS)</Typography>
+
                         <Typography variant={'h6'}>{damageDone / (tankGames + dpsGames) ? (damageDone / (tankGames + dpsGames)).toFixed(2) : 0}</Typography>
+
                     </Box>
                     <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
                         <Typography variant={'h5'}>Average Healing Per Game (Support)</Typography>
+
                         <Typography variant={'h6'}>{healingDone / (supportGames) ? (healingDone / (supportGames)).toFixed(2) : 0}</Typography>
+
                     </Box>
                 </Box>
 
@@ -729,6 +953,10 @@ function UserProfile(props) {
         </Fragment>
     )
 }
+
+
+
+
 
 
 
@@ -750,7 +978,8 @@ const presentationComponents = (props) => {
         {
             title: 'Lobby',
             component: <LobbyScreen team1={team1} team2={team2} setTeam1={setTeam1}
-                                    setTeam2={setTeam2} lobbyAvg={lobbyAvg} setLobbyAvg={setLobbyAvg}/>
+                                    setTeam2={setTeam2} lobbyAvg={lobbyAvg} setLobbyAvg={setLobbyAvg}
+                                    handleSelectedItem={handleSelectedItem}/>
         },
         {
             title: 'Profile',
