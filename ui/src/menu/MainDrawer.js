@@ -902,19 +902,22 @@ function UserProfile(props) {
     return (
         <Fragment>
             <div style={{textAlign:'center'}}>
-                <Typography variant={'h3'} marginBottom={'15px'}>{String(user).split('-')[0]}'s Profile</Typography>
+                <Typography marginTop={2} boxShadow={'0px 5px 15px 0 rgba(0, 0, 0,0.2)'}
+                            variant={'h3'} marginBottom={'15px'}>{String(user).split('-')[0]}'s Profile</Typography>
 
                 <Box my={5}>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#0080FF', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(0, 128, 255,5)'}}>
-                        <Typography variant={'h5'}>TANK</Typography>
-                        <Typography variant={'h6'}>Rank - {tankRank}</Typography>
-                        <Typography variant={'h6'}>Winrate - {tankWins / tankGames ? ((tankWins / tankGames) * 100).toFixed(2) : 0}%</Typography>
+                        <Typography color={'whitesmoke'} fontWeight={'bold'} variant={'h5'}>TANK</Typography>
+                        <img src={tankIcon}/>
+                        <Typography color={'whitesmoke'} variant={'h6'}>Rank - {tankRank}</Typography>
+                        <Typography color={'whitesmoke'} variant={'h6'}>Winrate - {tankWins / tankGames ? ((tankWins / tankGames) * 100).toFixed(2) : 0}%</Typography>
 
                     </Box>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#FF8C00', borderRadius: '20px', boxShadow: '5px 5px 20px 0 rgba(255, 102, 0,5)'}}>
-                        <Typography variant={'h5'}>DPS</Typography>
+                        <Typography fontWeight={'bold'} variant={'h5'}>DPS</Typography>
+                        <img src={damageIcon}/>
                         <Typography variant={'h6'}>Rank - {dpsRank}</Typography>
 
                         <Typography variant={'h6'}>Winrate - {dpsWins / dpsGames ? ((dpsWins / dpsGames) * 100).toFixed(2) : 0}%</Typography>
@@ -922,28 +925,29 @@ function UserProfile(props) {
                     </Box>
                     <Box style={{width:'32%', float:'left', padding:'2px', margin:'3px',
                         backgroundColor: '#FF4136', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(255, 65, 54,5)'}}>
-                        <Typography variant={'h5'}>SUPPORT</Typography>
-                        <Typography variant={'h6'}>Rank - {supportRank}</Typography>
+                        <Typography color={'whitesmoke'} fontWeight={'bold'} variant={'h5'}>SUPPORT</Typography>
+                        <img src={supportIcon}/>
+                        <Typography color={'whitesmoke'} variant={'h6'}>Rank - {supportRank}</Typography>
 
-                        <Typography variant={'h6'}>Winrate - {supportWins / supportGames ? ((supportWins / supportGames) * 100).toFixed(2) : 0}%</Typography>
+                        <Typography color={'whitesmoke'} variant={'h6'}>Winrate - {supportWins / supportGames ? ((supportWins / supportGames) * 100).toFixed(2) : 0}%</Typography>
 
                     </Box>
                 </Box>
 
 
-                <Box style={{marginTop: '200px'}}>
-                    <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
-                        backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
-                        <Typography variant={'h5'}>Average Damage Per Game (Tank & DPS)</Typography>
-
-                        <Typography variant={'h6'}>{damageDone / (tankGames + dpsGames) ? (damageDone / (tankGames + dpsGames)).toFixed(2) : 0}</Typography>
+                <Box style={{marginTop: '400px'}}>
+                    <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px', height:'300px',
+                        backgroundColor: '#DEDEDE', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,0.5)'}}>
+                        <Typography fontStyle={'italic'} marginTop={'20px'} fontWeight={'bold'} variant={'h5'}>Average Damage Per Game (Tank & DPS):</Typography>
+                        <img src={tankIcon}/> <img src={damageIcon}/>
+                        <Typography marginTop={'15px'} variant={'h4'}>{damageDone / (tankGames + dpsGames) ? (damageDone / (tankGames + dpsGames)).toFixed(2) : 0}</Typography>
 
                     </Box>
-                    <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px',
-                        backgroundColor: 'lightgrey', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,5)'}}>
-                        <Typography variant={'h5'}>Average Healing Per Game (Support)</Typography>
-
-                        <Typography variant={'h6'}>{healingDone / (supportGames) ? (healingDone / (supportGames)).toFixed(2) : 0}</Typography>
+                    <Box style={{width:'48%', float:'left', padding:'2px', margin:'3px', height:'300px',
+                        backgroundColor: '#DEDEDE', borderRadius: '25px', boxShadow: '5px 5px 20px 0 rgba(0, 0, 0,0.5)'}}>
+                        <Typography fontStyle={'italic'} marginTop={'20px'} fontWeight={'bold'} variant={'h5'}>Average Healing Per Game (Support):</Typography>
+                        <img src={supportIcon}/>
+                        <Typography marginTop={'15px'} variant={'h4'}>{healingDone / (supportGames) ? (healingDone / (supportGames)).toFixed(2) : 0}</Typography>
 
                     </Box>
                 </Box>
