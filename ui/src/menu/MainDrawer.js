@@ -579,13 +579,23 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function LobbyScreen(props) {
 
-    const {team1, team2, lobbyAvg, handleSelectedItem} = props;
-    // const team1 = ['player 1', 'player 2', 'player 3', 'player 4', 'player 5'];
-    // const team2 = ['player 6', 'player 7', 'player 8', 'player 9', 'player 10'];
+    const {team1, team2, lobbyAvg, handleSelectedItem, user} = props;
 
 
+    const [isUserACaptain, setUserCaptain] = useState(false);
     const [csvData, setCsvData] = useState([]);
     const [winner, setWinner] = useState(null);
+
+
+    // This is used so that buttons later are only visible to the two tanks on each team
+    useEffect(() => {
+        if (team1[0] === user) {
+            setUserCaptain(true);
+        } else if (team2[0] === user) {
+            setUserCaptain(true);
+        }
+    }, [user, team1, team2]);
+
 
     const api = new API();
 
@@ -699,8 +709,6 @@ function LobbyScreen(props) {
 
 
 
-
-
     // handle the CSV file uploading
     const readerRef = useRef(new FileReader());
     const handleCsvUpload = (event) => {
@@ -810,13 +818,16 @@ function LobbyScreen(props) {
                     </Stack>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", marginTop: "50px", flexDirection: "column" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                    <Box visibility={isUserACaptain ? 'visible' : 'hidden' } sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+
                         <Button variant="contained" onClick={() => handleWinnerSelect('team1')} style={{marginRight: '50px', marginTop: "50px"}}>
                             Report Winner - Team 1
                         </Button>
-                        <Button variant="contained" onClick={() => handleWinnerSelect('team2')} style={{marginLeft: '50px', marginTop: "50px"}}>
+
+                            <Button variant="contained" onClick={() => handleWinnerSelect('team2')} style={{marginLeft: '50px', marginTop: "50px"}}>
                             Report Winner - Team 2
                         </Button>
+
                     </Box>
                     {winner && (
                         <Box sx={{ justifyContent: "center", marginTop: "15px" }}>
@@ -981,7 +992,7 @@ const presentationComponents = (props) => {
         },
         {
             title: 'Lobby',
-            component: <LobbyScreen team1={team1} team2={team2} setTeam1={setTeam1}
+            component: <LobbyScreen team1={team1} team2={team2} setTeam1={setTeam1} user={user}
                                     setTeam2={setTeam2} lobbyAvg={lobbyAvg} setLobbyAvg={setLobbyAvg}
                                     handleSelectedItem={handleSelectedItem}/>
         },
