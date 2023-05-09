@@ -15,7 +15,8 @@ Includes a trivia minigame while waiting in queue!
 Created as a final project for Advanced Software Design class.
 
 
-Instructions:
+
+Demo Instructions:
 
 1. Run npm install to get the necessary node modules.
 2. Edit api/database/mySQLconnect.js to have the proper database connection credentials
